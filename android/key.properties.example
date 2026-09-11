@@ -1,0 +1,6 @@
+storePassword=<YOUR_STORE_PASSWORD>
+keyPassword=<YOUR_KEY_PASSWORD>
+keyAlias=upload
+storeFile=../upload-keystore.jks
+# 실제 키는 Play App Signing용 업로드키를 사용하세요.
+# 이 파일은 커밋하지 마세요. 실제 값은 android/key.properties에만 보관합니다.

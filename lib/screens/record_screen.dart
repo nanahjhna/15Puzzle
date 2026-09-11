@@ -1,0 +1,221 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/ad_banner_widget.dart';
+import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
+
+class RecordScreen extends StatefulWidget {
+  const RecordScreen({Key? key}) : super(key: key);
+
+  @override
+  _RecordScreenState createState() => _RecordScreenState();
+}
+
+class _RecordScreenState extends State<RecordScreen> {
+  int? _bestTimeMs;
+  int _totalPlays = 0;
+  int _totalTimeMs = 0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecords();
+  }
+
+  Future<void> _loadRecords() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _bestTimeMs = prefs.getInt('bestTimeMilliseconds');
+      _totalPlays = prefs.getInt('totalPlays') ?? 0;
+      _totalTimeMs = prefs.getInt('totalTimeElapsed') ?? 0;
+      _isLoading = false;
+    });
+  }
+
+  // 📌 다국어가 반영된 시간 포맷 함수 (AppTexts 활용)
+  String _formatTime(int? milliseconds) {
+    if (milliseconds == null) return '--:--.--';
+    int totalSeconds = milliseconds ~/ 1000;
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    int centiseconds = (milliseconds % 1000) ~/ 10;
+
+    return minutes > 0
+        ? AppTexts.formatTimeMinSec(minutes, seconds, centiseconds)
+        : AppTexts.formatTimeSec(seconds, centiseconds);
+  }
+
+  String _formatAverageTime() {
+    if (_totalPlays == 0 || _totalTimeMs == 0) return '--:--.--';
+    double avgMs = _totalTimeMs / _totalPlays;
+    return _formatTime(avgMs.round());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 📌 누적 플레이 시간 단위 계산 (분 단위)
+    double totalMinutes = _totalTimeMs / 1000 / 60;
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.home, color: Colors.white),
+                      onPressed: () {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      },
+                      tooltip: AppTexts.get('homeTooltip'), // 📌 다국어 적용
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        AppTexts.get('recordScreenTitle'), // 📌 다국어 적용
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 48), // 균형을 위한 빈 공간
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+                    : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 36.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildRecordCard(
+                        title: AppTexts.get('bestRecord'), // 📌 다국어 적용
+                        value: _formatTime(_bestTimeMs),
+                        icon: Icons.star,
+                        color: Colors.amber,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              title: AppTexts.get('totalPlays'), // 📌 다국어 적용
+                              value: '$_totalPlays ${AppTexts.get('playsUnit')}', // 📌 다국어 적용
+                              icon: Icons.play_arrow_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildStatCard(
+                              title: AppTexts.get('totalTime'), // 📌 다국어 적용
+                              value: '${totalMinutes.toStringAsFixed(1)} ${AppTexts.get('minutesUnit')}', // 📌 다국어 적용
+                              icon: Icons.history,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildStatCard(
+                        title: AppTexts.get('averageTime'), // 📌 다국어 적용
+                        value: _formatAverageTime(),
+                        icon: Icons.functions,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 50,
+                child: AdBannerWidget(),
+              ),
+              const SizedBox(height: 5),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordCard({required String title, required String value, required IconData icon, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.5), width: 2),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 26),
+              const SizedBox(width: 8),
+              Text(title, style: TextStyle(fontSize: 17, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color, letterSpacing: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({required String title, required String value, required IconData icon}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: Colors.white70),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
