@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'game_screen.dart';
+import 'fifteen_puzzle_screen.dart';
 import 'tutorial_screen.dart';
 import 'settings_screen.dart';
 import 'record_screen.dart'; // 📌 P4: RecordScreen 임포트 추가
@@ -159,6 +160,19 @@ class _MainScreenState extends State<MainScreen> {
                         MaterialPageRoute(builder: (_) => const GameScreen()),
                       );
                       setState(() {}); // 게임 화면에서 돌아왔을 때 언어 상태 갱신
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildMenuButton(
+                    context,
+                    title: AppTexts.get('fifteenPuzzle'),
+                    color: const Color(0xFF9C27B0),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const FifteenPuzzleScreen()),
+                      );
+                      setState(() {});
                     },
                   ),
                   const SizedBox(height: 16),

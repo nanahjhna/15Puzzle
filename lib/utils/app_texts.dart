@@ -47,6 +47,13 @@ class AppTexts {
       'minutesUnit': '분',
       'averageTime': '평균 클리어 타임',
       'privacyPolicy': '개인정보처리방침',
+      // 📌 15 퍼즐 추가 키값
+      'fifteenPuzzle': '15 퍼즐',
+      'fifteenReadyMessage': '번호를 순서대로 배치하세요.',
+      'fifteenNewRecord': '👑 신기록!',
+      'fifteenSuccess': '🎉 15 퍼즐 클리어!',
+      'fifteenPlayAgain': '다시 하기',
+      'fifteenHome': '홈으로',
     },
     'English': {
       'gameStart': 'Start Game',
@@ -75,6 +82,12 @@ class AppTexts {
       'minutesUnit': 'min',
       'averageTime': 'Average Time',
       'privacyPolicy': 'Privacy Policy',
+      'fifteenPuzzle': '15 Puzzle',
+      'fifteenReadyMessage': 'Arrange the numbers in order.',
+      'fifteenNewRecord': '👑 New Record!',
+      'fifteenSuccess': '🎉 15 Puzzle Cleared!',
+      'fifteenPlayAgain': 'Play Again',
+      'fifteenHome': 'Home',
     },
     '日本語': {
       'gameStart': 'ゲーム開始',
@@ -103,6 +116,12 @@ class AppTexts {
       'minutesUnit': '分',
       'averageTime': '平均クリアタイム',
       'privacyPolicy': 'プライバシーポリシー',
+      'fifteenPuzzle': '15パズル',
+      'fifteenReadyMessage': '番号を順番に並べてください。',
+      'fifteenNewRecord': '👑 新記録！',
+      'fifteenSuccess': '🎉 15パズルクリア！',
+      'fifteenPlayAgain': 'もう一度',
+      'fifteenHome': 'ホームへ',
     },
   };
 
