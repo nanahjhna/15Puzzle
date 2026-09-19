@@ -15,7 +15,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.han.puzzle"
+    namespace = "com.han.fifteen"
     
     // compileSdk를 flutter 기본값과 동기화하거나 targetSdk와 일치시킵니다.
     compileSdk = flutter.compileSdkVersion
@@ -27,7 +27,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.han.puzzle"
+        applicationId = "com.han.fifteen"
         minSdk = flutter.minSdkVersion
         // targetSdk를 임의로 고정하는 대신 플러터 기본값을 사용하거나 
         // 꼭 필요하다면 compileSdk와 동일하게 맞추는 것이 안전합니다.

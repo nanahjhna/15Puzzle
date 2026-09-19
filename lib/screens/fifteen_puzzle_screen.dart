@@ -16,7 +16,7 @@ class FifteenPuzzleScreen extends StatefulWidget {
 
 class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   final GlobalKey<FifteenPuzzleBoardState> _boardKey =
-      GlobalKey<FifteenPuzzleBoardState>();
+  GlobalKey<FifteenPuzzleBoardState>();
   final FifteenPuzzleState _puzzleState = FifteenPuzzleState();
 
   Timer? _gameTimer;
@@ -28,8 +28,6 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   int _countdownValue = 3;
 
   bool _isSoundOn = true;
-  bool _isBgmOn = true;
-
   int? _bestMilliseconds;
 
   @override
@@ -90,7 +88,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
         return WillPopScope(
           onWillPop: () async => false,
           child: AlertDialog(
-            backgroundColor: const Color(0xFF283593),
+            backgroundColor: const Color(0xFF1E88E5), // 조금 더 밝고 선명한 블루 계열
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
               AppTexts.get('fifteenPuzzle'),
@@ -138,9 +136,9 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white70),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10)
+                        side: const BorderSide(color: Colors.white70),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onPressed: () {
                         Navigator.push(
@@ -242,7 +240,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF283593),
+          backgroundColor: const Color(0xFF1E88E5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Column(
             children: [
@@ -338,7 +336,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              backgroundColor: const Color(0xFF283593),
+              backgroundColor: const Color(0xFF1E88E5),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               title: Text(
                 AppTexts.get('settingsTitle'),
@@ -348,7 +346,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
               content: Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
+                  color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white.withOpacity(0.2)),
                 ),
@@ -459,7 +457,8 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF3B4CCA),
+      // 이미지의 산뜻하고 채도 높은 파란색 배경 적용
+      backgroundColor: const Color(0xFF007AFF),
       body: SafeArea(
         child: Stack(
           children: [
@@ -491,14 +490,28 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     child: Center(
                       child: Container(
                         width: double.infinity,
-                        constraints: const BoxConstraints(maxWidth: 350, maxHeight: 350),
+                        constraints: const BoxConstraints(maxWidth: 360, maxHeight: 360),
+                        // [핵심] 이미지 속 나무 보드 느낌을 내기 위한 웜톤의 우드 그라데이션 및 입체 그림자 효과
                         decoration: BoxDecoration(
-                          color: const Color(0xFF283593),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))],
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFE2A76F), // 밝은 나무톤
+                              Color(0xFFB87333), // 진한 나무톤
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(12.0), // 나무 프레임 두께감 연출
                           child: Center(
                             child: Stack(
                               children: [

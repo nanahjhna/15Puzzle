@@ -45,3 +45,9 @@ app.*.map.json
 /android/local.properties
 /android/captures/
 .gradle/
+
+# Android signing keys & keystores (보안 관련 파일 제외 추가)
+**/android/key.properties
+*.jks
+*.keystore
+*.pem

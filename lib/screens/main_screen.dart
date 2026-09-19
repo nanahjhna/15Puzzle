@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'game_screen.dart';
 import 'fifteen_puzzle_screen.dart';
 import 'tutorial_screen.dart';
 import 'settings_screen.dart';
@@ -150,19 +149,6 @@ class _MainScreenState extends State<MainScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(),
-                  _buildMenuButton(
-                    context,
-                    title: AppTexts.get('gameStart'), // 📌 다국어 적용
-                    color: const Color(0xFFFB923C),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const GameScreen()),
-                      );
-                      setState(() {}); // 게임 화면에서 돌아왔을 때 언어 상태 갱신
-                    },
-                  ),
-                  const SizedBox(height: 16),
                   _buildMenuButton(
                     context,
                     title: AppTexts.get('fifteenPuzzle'),

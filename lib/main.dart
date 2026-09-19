@@ -26,11 +26,11 @@ void main() async {
     });
   }
 
-  runApp(const MagicCanPuzzleApp());
+  runApp(const fifteenPuzzleApp());
 }
 
-class MagicCanPuzzleApp extends StatelessWidget {
-  const MagicCanPuzzleApp({Key? key}) : super(key: key);
+class fifteenPuzzleApp extends StatelessWidget {
+  const fifteenPuzzleApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

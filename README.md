@@ -1,4 +1,4 @@
-# magiccanpuzzle
+# fifteenPuzzle
 
 A new Flutter project.
 
