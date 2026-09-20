@@ -41,11 +41,11 @@ class AppTexts {
       'minutesUnit': '분',
       'averageTime': '평균 클리어 타임',
       'privacyPolicy': '개인정보처리방침',
-      // 📌 15 퍼즐 추가 키값
-      'fifteenPuzzle': '15 퍼즐',
+      // 📌 퍼즐 추가 키값
+      'fifteenPuzzle': '게임 시작하기',
       'fifteenReadyMessage': '번호를 순서대로 배치하세요.',
       'fifteenNewRecord': '👑 신기록!',
-      'fifteenSuccess': '🎉 15 퍼즐 클리어!',
+      'fifteenSuccess': '🎉 퍼즐 클리어!',
       'fifteenPlayAgain': '다시 하기',
       'fifteenHome': '홈으로',
     },

@@ -8,7 +8,9 @@ import '../utils/app_texts.dart';
 import 'record_screen.dart';
 
 class FifteenPuzzleScreen extends StatefulWidget {
-  const FifteenPuzzleScreen({Key? key}) : super(key: key);
+  final int gridSize; // 📌 4 또는 5를 전달받을 변수
+
+  const FifteenPuzzleScreen({Key? key, this.gridSize = 4}) : super(key: key);
 
   @override
   _FifteenPuzzleScreenState createState() => _FifteenPuzzleScreenState();
@@ -17,7 +19,7 @@ class FifteenPuzzleScreen extends StatefulWidget {
 class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   final GlobalKey<FifteenPuzzleBoardState> _boardKey =
   GlobalKey<FifteenPuzzleBoardState>();
-  final FifteenPuzzleState _puzzleState = FifteenPuzzleState();
+  late final FifteenPuzzleState _puzzleState;
 
   Timer? _gameTimer;
   Timer? _countdownTimer;
@@ -33,6 +35,9 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   @override
   void initState() {
     super.initState();
+    // 📌 전달받은 gridSize(4 또는 5)를 퍼즐 상태 객체에 전달
+    _puzzleState = FifteenPuzzleState(gridSize: widget.gridSize);
+
     _loadSettings();
     _loadBestTime();
 
@@ -57,16 +62,19 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
     });
   }
 
+  // 📌 그리드 크기(4x4, 5x5)에 따라 다른 Best Time 키 사용
+  String get _bestTimeKey => 'fifteenBestTimeMilliseconds_${widget.gridSize}';
+
   Future<void> _loadBestTime() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _bestMilliseconds = prefs.getInt('fifteenBestTimeMilliseconds');
+      _bestMilliseconds = prefs.getInt(_bestTimeKey);
     });
   }
 
   Future<void> _saveBestTime(int timeInMs) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('fifteenBestTimeMilliseconds', timeInMs);
+    await prefs.setInt(_bestTimeKey, timeInMs);
     setState(() {
       _bestMilliseconds = timeInMs;
     });
@@ -74,10 +82,13 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
 
   Future<void> _updateGameStats(int timeInMs) async {
     final prefs = await SharedPreferences.getInstance();
-    int currentPlays = prefs.getInt('fifteenTotalPlays') ?? 0;
-    int currentTimeMs = prefs.getInt('fifteenTotalTimeElapsed') ?? 0;
-    await prefs.setInt('fifteenTotalPlays', currentPlays + 1);
-    await prefs.setInt('fifteenTotalTimeElapsed', currentTimeMs + timeInMs);
+    String playsKey = 'fifteenTotalPlays_${widget.gridSize}';
+    String timeKey = 'fifteenTotalTimeElapsed_${widget.gridSize}';
+
+    int currentPlays = prefs.getInt(playsKey) ?? 0;
+    int currentTimeMs = prefs.getInt(timeKey) ?? 0;
+    await prefs.setInt(playsKey, currentPlays + 1);
+    await prefs.setInt(timeKey, currentTimeMs + timeInMs);
   }
 
   void _showStartPopup() {
@@ -91,7 +102,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
             backgroundColor: const Color(0xFF1E88E5), // 조금 더 밝고 선명한 블루 계열
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              AppTexts.get('fifteenPuzzle'),
+              '${AppTexts.get('fifteenPuzzle')} (${widget.gridSize}x${widget.gridSize})',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
@@ -457,7 +468,6 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 이미지의 산뜻하고 채도 높은 파란색 배경 적용
       backgroundColor: const Color(0xFF007AFF),
       body: SafeArea(
         child: Stack(
@@ -491,14 +501,13 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                       child: Container(
                         width: double.infinity,
                         constraints: const BoxConstraints(maxWidth: 360, maxHeight: 360),
-                        // [핵심] 이미지 속 나무 보드 느낌을 내기 위한 웜톤의 우드 그라데이션 및 입체 그림자 효과
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              Color(0xFFE2A76F), // 밝은 나무톤
-                              Color(0xFFB87333), // 진한 나무톤
+                              Color(0xFFE2A76F),
+                              Color(0xFFB87333),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(24),
@@ -511,7 +520,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                           ],
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(12.0), // 나무 프레임 두께감 연출
+                          padding: const EdgeInsets.all(12.0),
                           child: Center(
                             child: Stack(
                               children: [

@@ -77,6 +77,68 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  // 📌 게임 시작 시 4x4 또는 5x5를 선택할 수 있는 팝업
+  void _showGridSizeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF283593),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            '게임 모드 선택\nSelect Game Mode',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF9C27B0),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context); // 팝업 닫기
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FifteenPuzzleScreen(gridSize: 4), // 4x4 전달
+                    ),
+                  );
+                  setState(() {});
+                },
+                child: const Text('4 X 4', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B1FA2),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  Navigator.pop(context); // 팝업 닫기
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FifteenPuzzleScreen(gridSize: 5), // 5x5 전달
+                    ),
+                  );
+                  setState(() {});
+                },
+                child: const Text('5 X 5', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // 언어 선택 버튼 위젯
   Widget _buildLangOption(String langName) {
     bool isSelected = AppTexts.currentLang == langName;
@@ -153,13 +215,7 @@ class _MainScreenState extends State<MainScreen> {
                     context,
                     title: AppTexts.get('fifteenPuzzle'),
                     color: const Color(0xFF9C27B0),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const FifteenPuzzleScreen()),
-                      );
-                      setState(() {});
-                    },
+                    onPressed: _showGridSizeDialog, // 📌 팝업 호출 함수로 연결
                   ),
                   const SizedBox(height: 16),
                   _buildMenuButton(
@@ -174,16 +230,6 @@ class _MainScreenState extends State<MainScreen> {
                       setState(() {});
                     },
                   ),
-                  // const SizedBox(height: 16),
-                  // _buildMenuButton(
-                  //   context,
-                  //   title: '게임 방법',
-                  //   color: const Color(0xFF34D399),
-                  //   onPressed: () => Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(builder: (_) => const TutorialScreen()),
-                  //   ),
-                  // ),
                   const SizedBox(height: 16),
                   _buildMenuButton(
                     context,

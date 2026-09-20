@@ -59,15 +59,21 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
 
   @override
   Widget build(BuildContext context) {
+    // 📌 puzzleState에서 현재 그리드 크기(4 또는 5) 가져오기
+    int gridSize = widget.puzzleState.gridSize;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         double boardSize = constraints.maxWidth;
-        double cellSize = (boardSize - 30) / 4;
-        if (cellSize > 80) cellSize = 80;
+        // 📌 그리드 크기에 맞춰 셀 크기 및 간격 계산 (5x5일 경우 간격을 조금 더 좁게 조절 가능)
+        double totalSpacing = (gridSize - 1) * 6.0;
+        double cellSize = (boardSize - 30 - totalSpacing) / gridSize;
+        if (cellSize > (gridSize == 5 ? 65 : 80)) {
+          cellSize = gridSize == 5 ? 65 : 80;
+        }
 
         return Container(
           padding: const EdgeInsets.all(12),
-          // [우드 보드 프레임 디자인] 이미지의 따뜻하고 고급스러운 나무 판자 느낌을 주는 그라데이션 및 입체감
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -95,9 +101,9 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              itemCount: 16,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
+              itemCount: gridSize * gridSize, // 📌 4x4는 16, 5x5는 25
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: gridSize, // 📌 동적 크기 적용
                 crossAxisSpacing: 6,
                 mainAxisSpacing: 6,
               ),
@@ -118,18 +124,17 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
                   child: Container(
                     width: cellSize,
                     height: cellSize,
-                    // [개별 타일 디자인] 나무 블록이 볼록하게 솟아 있는 입체적인 질감과 그림자 표현
                     decoration: BoxDecoration(
                       color: isEmpty ? Colors.transparent : null,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(gridSize == 5 ? 8 : 12),
                       gradient: isEmpty
                           ? null
                           : const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          Color(0xFFFFF4E0), // 타일 상단 밝은 크림우드 톤
-                          Color(0xFFE5BE9B), // 타일 하단 따뜻한 우드 톤
+                          Color(0xFFFFF4E0),
+                          Color(0xFFE5BE9B),
                         ],
                       ),
                       boxShadow: isEmpty
@@ -138,25 +143,24 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
                         BoxShadow(
                           color: Colors.black.withOpacity(0.25),
                           blurRadius: 4,
-                          offset: const Offset(0, 3), // 블록 아래로 떨어지는 입체 음영
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
                     child: isEmpty
                         ? Container(
-                      // [빈칸 디자인] 이미처럼 빈 공간은 나무 판자 안쪽이 파인 듯한 짙은 우드톤 음영 처리
                       decoration: BoxDecoration(
                         color: const Color(0xFF9E5C22),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(gridSize == 5 ? 8 : 12),
                       ),
                     )
                         : Center(
                       child: Text(
                         label,
                         style: TextStyle(
-                          fontSize: cellSize * 0.38,
+                          // 📌 5x5일 때는 칸이 더 촘촘하므로 글자 크기를 살짝 줄임
+                          fontSize: cellSize * (gridSize == 5 ? 0.45 : 0.38),
                           fontWeight: FontWeight.w900,
-                          // [숫자 디자인] 나무 블록과 대비되어 또렷하게 보이는 짙은 갈색 텍스트
                           color: const Color(0xFF4A2E18),
                           letterSpacing: -0.5,
                         ),
