@@ -73,17 +73,28 @@ class FifteenPuzzleState {
     int emptyRow = emptyIndex ~/ gridSize;
     int emptyCol = emptyIndex % gridSize;
 
-    bool isAdjacent = (clickedRow - emptyRow).abs() + (clickedCol - emptyCol).abs() == 1;
+    // 📌 빈칸과 같은 행 또는 같은 열에 있는 타일만 이동 가능 (원거리 탭 시 슬라이드)
+    bool sameRow = clickedRow == emptyRow;
+    bool sameCol = clickedCol == emptyCol;
+    if (!sameRow && !sameCol) return false;
 
-    if (isAdjacent) {
-      int temp = tiles[emptyIndex];
-      tiles[emptyIndex] = tiles[clickedIndex];
-      tiles[clickedIndex] = temp;
-      emptyIndex = clickedIndex;
-      checkSuccess();
-      return true;
+    // 빈칸에서 클릭한 타일 쪽으로 향하는 방향 오프셋
+    int step;
+    if (sameRow) {
+      step = clickedCol > emptyCol ? 1 : -1;
+    } else {
+      step = clickedRow > emptyRow ? gridSize : -gridSize;
     }
-    return false;
+
+    // 빈칸부터 클릭한 타일까지의 타일들을 빈칸 방향으로 한 칸씩 민다
+    for (int i = emptyIndex; i != clickedIndex; i += step) {
+      tiles[i] = tiles[i + step];
+    }
+    tiles[clickedIndex] = 0;
+    emptyIndex = clickedIndex;
+
+    checkSuccess();
+    return true;
   }
 
   bool isWon() {
