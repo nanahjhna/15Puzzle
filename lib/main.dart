@@ -21,6 +21,14 @@ void main() async {
   // 📌 모바일 환경에서 애드몹 초기화 및 상태 로깅 추가
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     InitializationStatus status = await MobileAds.instance.initialize();
+    
+    // 📌 로그에 나타난 테스트 디바이스 ID 등록
+    MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(
+        testDeviceIds: ['4492C32A190B5A1EE24DCB8D74BA5C8F'],
+      ),
+    );
+
     status.adapterStatuses.forEach((key, value) {
       debugPrint('AdMob Adapter status: $key: ${value.state.name} (${value.description})');
     });

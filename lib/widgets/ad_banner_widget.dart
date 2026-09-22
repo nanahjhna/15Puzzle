@@ -11,10 +11,10 @@ class AdBannerWidget extends StatefulWidget {
 class _AdBannerWidgetState extends State<AdBannerWidget> {
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
+  bool _isDisposed = false;
 
-  // 실제 서비스용 광고 단위 ID (변경 금지)
-  //final String _adUnitId = 'ca-app-pub-3940256099942544/6331489573'; // 테스트용
-  final String _adUnitId = 'ca-app-pub-1474045642143501/6339356213';
+  // 실제 서비스용 광고 단위 ID만 사용
+  final String _adUnitId = 'ca-app-pub-1474045642143501/2747098127';
 
   @override
   void initState() {
@@ -23,19 +23,35 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
   }
 
   void _loadBannerAd() {
+    if (_isDisposed) return;
+
     _bannerAd = BannerAd(
       adUnitId: _adUnitId,
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          setState(() {
-            _isAdLoaded = true;
-          });
+          if (!_isDisposed && mounted) {
+            setState(() {
+              _isAdLoaded = true;
+            });
+          }
         },
         onAdFailedToLoad: (ad, err) {
+          debugPrint('BannerAd failed to load: $err (AdUnitId: $_adUnitId)');
           ad.dispose();
-          debugPrint('BannerAd failed to load: $err');
+          if (!_isDisposed && mounted) {
+            setState(() {
+              _isAdLoaded = false;
+              _bannerAd = null;
+            });
+            // 광고 로드 실패 시 5초 후 자동 재시도
+            Future.delayed(const Duration(seconds: 5), () {
+              if (!_isDisposed && mounted) {
+                _loadBannerAd();
+              }
+            });
+          }
         },
       ),
     )..load();
@@ -43,6 +59,7 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _bannerAd?.dispose();
     super.dispose();
   }
@@ -57,7 +74,11 @@ class _AdBannerWidgetState extends State<AdBannerWidget> {
         child: AdWidget(ad: _bannerAd!),
       );
     }
-    // 출시 빌드: 로딩 전/실패 시 빈 공간 (레이아웃 점프 방지용 최소 높이 없음)
-    return const SizedBox.shrink();
+    // 로딩 중이거나 실패 시 빈 공간
+    return const SizedBox(
+      width: 320,
+      height: 50,
+      child: SizedBox.shrink(),
+    );
   }
 }

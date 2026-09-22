@@ -7,9 +7,10 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
+        <!-- 📌 개발/테스트 중에는 구글 공식 테스트 앱 ID 사용 (출시 시 실제 앱 ID로 변경) -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1474045642143501~6266144531"/>
+            android:value="ca-app-pub-1474045642143501~1609276273"/>
 
         <activity
             android:name=".MainActivity"
