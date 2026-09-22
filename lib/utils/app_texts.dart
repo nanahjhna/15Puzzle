@@ -48,6 +48,10 @@ class AppTexts {
       'fifteenSuccess': '🎉 퍼즐 클리어!',
       'fifteenPlayAgain': '다시 하기',
       'fifteenHome': '홈으로',
+      // 📌 홍보 / 다른 앱 구경하기 키 추가
+      'moreApps': '다른 앱 구경하기',
+      'moreAppsTitle': '다른 앱들도 구경해 보세요!',
+      'moreAppsMessage': '아래 앱을 눌러 스토어에서 확인해 보세요.',
     },
     'English': {
       'gameStart': 'Start Game',
@@ -76,6 +80,10 @@ class AppTexts {
       'fifteenSuccess': '🎉 15 Puzzle Cleared!',
       'fifteenPlayAgain': 'Play Again',
       'fifteenHome': 'Home',
+      // 📌 홍보 / 다른 앱 구경하기 키 추가
+      'moreApps': 'More Apps',
+      'moreAppsTitle': 'Check Out My Other Apps!',
+      'moreAppsMessage': 'Tap an app below to check it out in the store.',
     },
     '日本語': {
       'gameStart': 'ゲーム開始',
@@ -104,6 +112,10 @@ class AppTexts {
       'fifteenSuccess': '🎉 15パズルクリア！',
       'fifteenPlayAgain': 'もう一度',
       'fifteenHome': 'ホームへ',
+      // 📌 홍보 / 다른 앱 구경하기 키 추가
+      'moreApps': '他のアプリを見る',
+      'moreAppsTitle': '他のアプリもチェック！',
+      'moreAppsMessage': '下のアプリをタップしてストアで確認できます。',
     },
   };
 

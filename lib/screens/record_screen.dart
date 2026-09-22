@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/ad_banner_widget.dart';
-import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
+import '../utils/app_texts.dart';
 
 class RecordScreen extends StatefulWidget {
   const RecordScreen({Key? key}) : super(key: key);
@@ -11,9 +11,8 @@ class RecordScreen extends StatefulWidget {
 }
 
 class _RecordScreenState extends State<RecordScreen> {
-  int? _bestTimeMs;
-  int _totalPlays = 0;
-  int _totalTimeMs = 0;
+  _ModeRecord? _record4;
+  _ModeRecord? _record5;
   bool _isLoading = true;
 
   @override
@@ -23,11 +22,14 @@ class _RecordScreenState extends State<RecordScreen> {
   }
 
   Future<void> _loadRecords() async {
-    final prefs = await SharedPreferences.getInstance();
+    // 📌 4x4 / 5x5 모드별 기록을 각각 로드
+    final record4 = _ModeRecord(4);
+    final record5 = _ModeRecord(5);
+    await Future.wait([record4.load(), record5.load()]);
+    if (!mounted) return;
     setState(() {
-      _bestTimeMs = prefs.getInt('bestTimeMilliseconds');
-      _totalPlays = prefs.getInt('totalPlays') ?? 0;
-      _totalTimeMs = prefs.getInt('totalTimeElapsed') ?? 0;
+      _record4 = record4;
+      _record5 = record5;
       _isLoading = false;
     });
   }
@@ -45,17 +47,8 @@ class _RecordScreenState extends State<RecordScreen> {
         : AppTexts.formatTimeSec(seconds, centiseconds);
   }
 
-  String _formatAverageTime() {
-    if (_totalPlays == 0 || _totalTimeMs == 0) return '--:--.--';
-    double avgMs = _totalTimeMs / _totalPlays;
-    return _formatTime(avgMs.round());
-  }
-
   @override
   Widget build(BuildContext context) {
-    // 📌 누적 플레이 시간 단위 계산 (분 단위)
-    double totalMinutes = _totalTimeMs / 1000 / 60;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Container(
@@ -101,43 +94,44 @@ class _RecordScreenState extends State<RecordScreen> {
               Expanded(
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator(color: Colors.amber))
-                    : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 36.0),
+                    : DefaultTabController(
+                  length: 2,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildRecordCard(
-                        title: AppTexts.get('bestRecord'), // 📌 다국어 적용
-                        value: _formatTime(_bestTimeMs),
-                        icon: Icons.star,
-                        color: Colors.amber,
+                      // 📌 4x4 / 5x5 모드 선택 탭
+                      Container(
+                        height: 48,
+                        margin: const EdgeInsets.symmetric(horizontal: 36.0),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TabBar(
+                          dividerColor: Colors.transparent,
+                          indicator: BoxDecoration(
+                            color: const Color(0xFF9C27B0),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          labelColor: Colors.white,
+                          unselectedLabelColor: Colors.white70,
+                          labelStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          tabs: const [
+                            Tab(text: '4 X 4'),
+                            Tab(text: '5 X 5'),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              title: AppTexts.get('totalPlays'), // 📌 다국어 적용
-                              value: '$_totalPlays ${AppTexts.get('playsUnit')}', // 📌 다국어 적용
-                              icon: Icons.play_arrow_rounded,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildStatCard(
-                              title: AppTexts.get('totalTime'), // 📌 다국어 적용
-                              value: '${totalMinutes.toStringAsFixed(1)} ${AppTexts.get('minutesUnit')}', // 📌 다국어 적용
-                              icon: Icons.history,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildStatCard(
-                        title: AppTexts.get('averageTime'), // 📌 다국어 적용
-                        value: _formatAverageTime(),
-                        icon: Icons.functions,
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _buildRecordContent(_record4!),
+                            _buildRecordContent(_record5!),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -151,6 +145,52 @@ class _RecordScreenState extends State<RecordScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRecordContent(_ModeRecord record) {
+    // 📌 누적 플레이 시간 단위 계산 (분 단위)
+    double totalMinutes = record.totalTimeMs / 1000 / 60;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 36.0, vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildRecordCard(
+            title: AppTexts.get('bestRecord'), // 📌 다국어 적용
+            value: _formatTime(record.bestTimeMs),
+            icon: Icons.star,
+            color: Colors.amber,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  title: AppTexts.get('totalPlays'), // 📌 다국어 적용
+                  value: '${record.totalPlays} ${AppTexts.get('playsUnit')}', // 📌 다국어 적용
+                  icon: Icons.play_arrow_rounded,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildStatCard(
+                  title: AppTexts.get('totalTime'), // 📌 다국어 적용
+                  value: '${totalMinutes.toStringAsFixed(1)} ${AppTexts.get('minutesUnit')}', // 📌 다국어 적용
+                  icon: Icons.history,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildStatCard(
+            title: AppTexts.get('averageTime'), // 📌 다국어 적용
+            value: _formatTime(record.averageMs),
+            icon: Icons.functions,
+          ),
+        ],
       ),
     );
   }
@@ -217,5 +257,27 @@ class _RecordScreenState extends State<RecordScreen> {
         ],
       ),
     );
+  }
+}
+
+// 📌 모드별(4x4 / 5x5) 기록 데이터를 로드하는 헬퍼 클래스
+class _ModeRecord {
+  final int gridSize;
+  int? bestTimeMs;
+  int totalPlays = 0;
+  int totalTimeMs = 0;
+
+  _ModeRecord(this.gridSize);
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    bestTimeMs = prefs.getInt('fifteenBestTimeMilliseconds_$gridSize');
+    totalPlays = prefs.getInt('fifteenTotalPlays_$gridSize') ?? 0;
+    totalTimeMs = prefs.getInt('fifteenTotalTimeElapsed_$gridSize') ?? 0;
+  }
+
+  int? get averageMs {
+    if (totalPlays == 0 || totalTimeMs == 0) return null;
+    return (totalTimeMs / totalPlays).round();
   }
 }

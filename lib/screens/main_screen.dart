@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart'; // 📌 스토어 연결을 위해 추가
 import 'fifteen_puzzle_screen.dart';
-import 'tutorial_screen.dart';
 import 'settings_screen.dart';
 import 'record_screen.dart'; // 📌 P4: RecordScreen 임포트 추가
 import '../widgets/ad_banner_widget.dart';
 import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
+
+// 📌 홍보 앱 목록 (팝업에서 스토어로 연결됩니다)
+// 여기에 { 이름, 패키지명 }만 추가하면 팝업에 자동 반영됩니다.
+const List<_PromoApp> _promoApps = [
+  _PromoApp(name: 'Magic Can Puzzle', packageName: 'com.han.fifteen'),
+];
+
+class _PromoApp {
+  final String name;
+  final String packageName;
+
+  const _PromoApp({required this.name, required this.packageName});
+}
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -75,6 +88,73 @@ class _MainScreenState extends State<MainScreen> {
         );
       },
     );
+  }
+
+  // 📌 [다른 앱 구경하기] 버튼을 눌렀을 때 실행되는 홍보 팝업
+  void _showPromoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF283593),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            AppTexts.get('moreAppsTitle'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppTexts.get('moreAppsMessage'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              // 📌 홍보 앱 목록을 스토어 버튼으로 표시
+              for (final app in _promoApps) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7B1FA2),
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context); // 팝업 닫기
+                      _launchStore(app.packageName);
+                    },
+                    icon: const Icon(Icons.storefront, size: 20),
+                    label: Text(app.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 📌 구글 플레이스토어 연결 (market:// 시도 후 실패 시 https 폴백)
+  Future<void> _launchStore(String packageName) async {
+    final marketUri = Uri.parse('market://details?id=$packageName');
+    final httpsUri = Uri.parse('https://play.google.com/store/apps/details?id=$packageName');
+    try {
+      if (await canLaunchUrl(marketUri)) {
+        await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      if (await canLaunchUrl(httpsUri)) {
+        await launchUrl(httpsUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Store launch failed: $e');
+    }
   }
 
   // 📌 게임 시작 시 4x4 또는 5x5를 선택할 수 있는 팝업
@@ -242,6 +322,13 @@ class _MainScreenState extends State<MainScreen> {
                       );
                       setState(() {}); // 설정 화면에서 언어를 바꾸고 돌아왔을 때 반영
                     },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildMenuButton(
+                    context,
+                    title: AppTexts.get('moreApps'), // 📌 다국어 적용
+                    color: const Color(0xFF14B8A6),
+                    onPressed: _showPromoDialog,
                   ),
                   const SizedBox(height: 24),
                   const AdBannerWidget(),
