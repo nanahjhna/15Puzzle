@@ -1,0 +1,308 @@
+================================================================================
+  프로젝트 분석 설계서 (Magic Can Puzzle / 15Puzzle)
+  작성일: 2026-09-22
+================================================================================
+
+1. 프로젝트 개요
+--------------------------------------------------------------------------------
+- 프로젝트명      : fifteenPuzzle (앱 표시명: fifteenPuzzle, 타이틀: Magic Can Puzzle)
+- 플랫폼          : Flutter (Android / iOS / Web / Windows / macOS / Linux 멀티플랫폼 지원)
+- 패키지명        : fifteenPuzzle (Android applicationId: com.han.fifteen)
+- 버전            : 1.0.0+5
+- Dart SDK        : ^3.12.2
+- 게임 종류       : 숫자 15 퍼즐 (슬라이딩 퍼즐) - 4x4 / 5x5 모드 지원
+- 핵심 기능       : 게임 플레이, 타이머, 최고 기록 저장, 통계(플레이 횟수/누적 시간/평균 시간),
+                  다국어 지원(한국어/English/日本語), 효과음, AdMob 배너 광고, 인앱 업데이트 확인
+
+2. 기술 스택 및 의존성 (pubspec.yaml)
+--------------------------------------------------------------------------------
+[런타임 의존성]
+- flutter                  : Flutter SDK
+- audioplayers ^6.0.0      : 효과음 재생 (start/slide/clear/tap)
+- cupertino_icons ^1.0.8   : iOS 스타일 아이콘
+- in_app_update ^5.0.0     : Android 인앱 업데이트 (Immediate Update)
+- package_info_plus ^10.2.1: 앱 버전/빌드 번호 조회
+- url_launcher ^6.3.2      : 개인정보처리방침 웹페이지 열기
+- shared_preferences ^2.5.5: 설정/기록 로컬 저장 (키-값)
+- google_mobile_ads ^9.1.0 : AdMob 배너 광고
+
+[개발 의존성]
+- flutter_test, flutter_lints ^6.0.0, flutter_launcher_icons ^0.14.4
+
+[에셋]
+- assets/images/ : title.png(메인 배경), background.jpg(서브 화면 배경)
+- assets/sounds/ : tap.mp3, start.mp3, slide.mp3, clear.mp3
+
+3. 디렉토리 구조 (lib/)
+--------------------------------------------------------------------------------
+lib/
+├── main.dart                        # 앱 진입점, 테마, AdMob/언어 초기화
+├── models/
+│   └── fifteen_puzzle_state.dart    # 퍼즐 게임 로직(셔플, 이동, 성공 판정, 해결 가능성)
+├── screens/
+│   ├── main_screen.dart             # 메인(홈) 화면
+│   ├── fifteen_puzzle_screen.dart   # 퍼즐 게임 화면 (4x4/5x5)
+│   ├── record_screen.dart           # 기록/통계 화면
+│   ├── settings_screen.dart         # 설정 화면
+│   ├── tutorial_screen.dart         # 튜토리얼 화면 (구조만 존재, 콘텐츠 미구현)
+│   └── blank_page.dart              # 임시/준비 중 화면 (※ TutorialScreen 클래스명 중복 정의됨)
+├── widgets/
+│   ├── fifteen_puzzle_board.dart    # 퍼즐 보드 UI (GridView + 사운드)
+│   └── ad_banner_widget.dart        # AdMob 배너 광고 공통 위젯
+└── utils/
+    └── app_texts.dart               # 다국어 문자열 관리 + 시간 포맷 변환
+
+4. 화면 흐름 (Navigation Flow)
+--------------------------------------------------------------------------------
+[앱 시작 (main.dart)]
+  main()
+   ├─ SharedPreferences에서 저장된 언어 로드 → AppTexts.setLanguage()
+   ├─ (모바일 전용) AdMob MobileAds.instance.initialize()
+   └─ runApp(fifteenPuzzleApp) → MaterialApp(home: MainScreen)
+
+[메인 화면 (MainScreen)] ← 루트
+  ├─ [게임 시작하기] → 게임 모드 선택 팝업(4x4 / 5x5) → FifteenPuzzleScreen(gridSize)
+  ├─ [기록 보기]     → RecordScreen
+  ├─ [설정]          → SettingsScreen
+  ├─ [우측 상단 지구본 아이콘] → 언어 선택 팝업 (한국어/English/日本語)
+  ├─ 좌측 상단: 앱 버전 표시 (ver : 1.0.0+5)
+  └─ 하단: AdMob 배너 광고
+
+[퍼즐 게임 화면 (FifteenPuzzleScreen)]
+  진입 → 시작 팝업 (게임 시작 / 기록 보기 버튼)
+  게임 시작 → 3,2,1 카운트다운 → 타이머 시작
+  플레이 → 타일 탭으로 이동 → 성공 시 완료 팝업 (홈으로 / 다시 하기)
+  우측 상단 설정 아이콘 → 인게임 설정 팝업 (메인으로 이동 / 게임 다시하기 / 효과음 on-off)
+  하단: AdMob 배너 광고
+
+[기록 화면 (RecordScreen)]
+  최고 기록 / 플레이 횟수 / 누적 플레이 시간 / 평균 클리어 타임 표시
+  좌측 상단 홈 버튼 → popUntil(root)로 메인 복귀
+  하단: AdMob 배너 광고
+
+[설정 화면 (SettingsScreen)]
+  언어 선택 드롭다운 / 효과음 스위치 / 개인정보처리방침 링크
+  좌측 상단 홈 버튼 → popUntil(root)로 메인 복귀
+  하단: AdMob 배너 광고 · 하단에 앱 버전 표시
+
+5. 화면별 상세 설계
+--------------------------------------------------------------------------------
+5-1. main.dart (앱 진입점)
+  - 플랫폼 확인 후 AdMob 초기화 (웹 제외, Android/iOS만)
+  - MaterialApp: title 'Magic Can Puzzle', ThemeData(primarySwatch: Colors.pink)
+  - home = MainScreen, debugShowCheckedModeBanner = false
+
+5-2. MainScreen (메인 화면)
+  - initState: _checkForUpdate() 인앱 업데이트 확인, _initPackageInfo() 버전 로드
+  - 배경: assets/images/title.png (BoxFit.cover), AppBar 투명 + extendBodyBehindAppBar
+  - 주요 UI
+    * 좌측 상단: 'ver : {version}+{buildNumber}' 텍스트 (leadingWidth 120)
+    * 우측 상단: 언어(지구본) 아이콘 → 경고창으로 언어 3종 선택 (선택 시 AppTexts.setLanguage 후 즉시 반영, 현재 언어는 볼드+앰버)
+    * 중앙 메뉴 버튼 3개 (가로 100%, 높이 56, 둥근 모서리 16)
+       ① 게임 시작하기 (보라 #9C27B0) → _showGridSizeDialog()
+       ② 기록   보기 (노랑 #FBBF24) → RecordScreen
+       ③ 설정        (하늘 #38BDF8) → SettingsScreen
+    * 하단: AdBannerWidget
+  - 게임 모드 선택 팝업: 4 X 4(진보라) / 5 X 5(어두운 보라) 버튼, Navigator.push로 FifteenPuzzleScreen(gridSize) 이동, 복귀 시 setState 새로고침
+  - 네비게이션 복귀 후 setState 호출로 언어 변경 반영
+
+5-3. FifteenPuzzleScreen (퍼즐 게임 화면)
+  - 생성자: gridSize (기본 4, 4 또는 5)
+  - 상태: FifteenPuzzleState, 타이머(Timer/Stopwatch), 카운트다운, 사운드 설정, 최고 기록
+  - 진행 순서
+    ① 시작 팝업 (barrierDismissible=false, back키 차단 WillPopScope)
+       - '게임 시작' 버튼 → 셔플 후 3초 카운트다운 시작
+       - '기록 보기' 버튼 → RecordScreen 이동
+    ② 카운트다운: 3→2→1 표시(전체 오버레이, 검정 70% 배경 + 앰버 숫자), 시작 시 start.mp3 재생
+       - 카운트 종료 시 Stopwatch 시작, 10ms 주기 타이머로 _millisecondsElapsed 갱신
+    ③ 게임 진행: FifteenPuzzleBoard 위젯에서 타일 탭 → moveTile() → onUpdate 콜백 → 화면 갱신 + _checkSuccess()
+       - !_isPlaying 상태에서는 AbsorbPointer로 보드 입력 차단
+    ④ 성공 판정: puzzleState.isSuccess && _isPlaying → 타이머 정지, clear.mp3 재생
+       - 최고 기록 갱신 여부 판정 → _saveBestTime() (신기록 시 '👑 신기록!' 표시)
+       - 통계 갱신: _updateGameStats() (플레이 횟수 +1, 누적 시간 합산)
+       - 성공 팝업: 소요 시간 표시, [홈으로] / [다시 하기] 버튼
+  - 인게임 설정 팝업 (우측 상단 설정 아이콘)
+    * 게임 중이면 타이머 일시정지, 팝업 닫으면 재개
+    * 메뉴: [🏠 메인으로 이동] / [🔄 게임 다시하기] / 효과음 스위치
+  - 상단 UI: 타이머 아이콘 + 경과 시간(MM:SS.cc 형식), 설정 아이콘
+  - 보드 영역: 나무 톤 그라데이션 컨테이너(maxWidth/maxHeight 360, 모서리 24)
+  - 하단: AdBannerWidget (높이 50)
+
+5-4. RecordScreen (기록 화면)
+  - 배경: background.jpg, 좌측 상단 홈 버튼(popUntil root), 중앙 타이틀 '🏆 게임 기록'
+  - SharedPreferences에서 3종 키 로드 후 표시
+    * 최고 기록(bestTimeMilliseconds) - 별 아이콘(앰버)
+    * 플레이 횟수(totalPlays) / 누적 플레이 시간(totalTimeElapsed) - 2열 통계 카드
+    * 평균 클리어 타임(누적시간 ÷ 플레이 횟수) - 하단 통계 카드
+  - 시간 포맷: AppTexts.formatTimeSec / formatTimeMinSec (분 단위 미만이면 초 단위 표기)
+  - 로딩 중에는 CircularProgressIndicator(앰버) 표시
+
+  ※ 주의: 현재 화면은 'bestTimeMilliseconds, totalPlays, totalTimeElapsed' 키만 읽으며,
+           게임 화면에서 저장하는 키는 모드별 키('fifteenBestTimeMilliseconds_{n}',
+           'fifteenTotalPlays_{n}', 'fifteenTotalTimeElapsed_{n}')라서
+           실제 게임 기록이 기록 화면에 반영되지 않는 불일치가 있음 (이슈 2 참조)
+
+5-5. SettingsScreen (설정 화면)
+  - 배경: background.jpg, 좌측 상단 홈 버튼, 중앙 타이틀 '⚙️ 설정'
+  - 설정 항목 (반투명 검정 카드 안에 배치)
+    * 언어 선택: DropdownButton (한국어/English/日本語) → AppTexts.setLanguage() 즉시 저장·반영
+    * 효과음: Switch → SharedPreferences 'isSoundOn' 즉시 저장 (기본 true)
+    * 개인정보처리방침: url_launcher로 https://hdevpolic.netlify.app/ 외부 브라우저 열기
+  - 하단: AdBannerWidget + 'ver : {version}+{buildNumber}' 표시
+  - 참고: _isBgmOn 변수는 화면에 노출되지 않음 (BGM 스위치 항목 미구현 상태)
+
+5-6. TutorialScreen / blank_page.dart (튜토리얼 화면)
+  - tutorial_screen.dart: PageController/페이지 상태/데이터 리스트(제목·설명·이미지)는 정의되어 있으나
+    실제 PageView UI 코드는 제거됨 → 사실상 헤더 + AdBanner만 있는 빈 화면
+  - blank_page.dart: 동일한 TutorialScreen 클래스명을 재정의한 임시 파일
+    ('준비 중입니다.' 문구 + AdBanner). 두 파일을 동시에 import하면 중복 정의 오류 위험
+  - 두 화면 모두 MainScreen에서 현재 진입 경로가 없음 (미사용 화면)
+
+6. 게임 로직 설계 (FifteenPuzzleState)
+--------------------------------------------------------------------------------
+- 필드: gridSize, tiles(List<int>, 0=빈칸), emptyIndex, isSuccess
+- init(): 1..(N*N-1) 숫자 + 0(빈칸) 순서로 초기화
+- shuffle(): 피셔-예이츠 셔플 후 '풀이 가능 조건'을 만족하고 완성 상태가 아닐 때까지 재셔플
+  - isSolvable(): 인버전(역전) 수 계산
+    * 홀수 그리드(5x5): 인버전 수가 짝수면 풀이 가능
+    * 짝수 그리드(4x4): 빈칸 행(바닥 기준)이 홀수면 인버전 짝수, 짝수면 인버전 홀수여야 풀이 가능
+- moveTile(clickedIndex): 이동 규칙
+  * 빈칸(0)과 같은 행 또는 같은 열에 있는 타일만 이동 가능 (대각선 불가)
+  * 빈칸부터 클릭한 타일까지의 타일을 빈칸 방향으로 한 칸씩 밀어서 이동 (원거리 탭 슬라이드)
+  * 이동 후 checkSuccess() 호출
+- isWon(): tiles가 [1,2,...,N*N-1,0] 순서와 일치하면 true
+- getTileLabel / isEmpty: UI 표시용 헬퍼
+
+7. 위젯 설계
+--------------------------------------------------------------------------------
+7-1. FifteenPuzzleBoard
+  - 입력: puzzleState, onUpdate(콜백), isSoundOn
+  - LayoutBuilder로 셀 크기 계산 (보드 12 패딩, 셀 간격 6, 최대 셀 크기: 4x4=80, 5x5=65)
+  - GridView.builder (crossAxisCount = gridSize, 스크롤 없음, shrinkWrap)
+  - 타일 탭 → moveTile() 성공 시 slide.mp3 재생 + onUpdate() 호출
+  - 타일 시각화: 나무 그라데이션 배경(#FFE2A76F→#B87333), 타일은 밝은 우드 톤(#FFF4E0→#E5BE9B),
+    빈칸은 어두운 우드색(#9E5C22), 글자색 #4A2E18 (5x5에서는 글자 크기 비율 0.45, 모서리 8)
+  - AudioPlayer 인스턴스 보유, 공개 메서드: playStartSound(), playClearSound()
+
+7-2. AdBannerWidget
+  - BannerAd 로드 (adUnitId: ca-app-pub-1474045642143501/6339356213, 배너 크기)
+  - 로드 완료 시 AdWidget 표시, 실패/로딩 전에는 SizedBox.shrink()로 공간 점유 없음
+  - dispose 시 배너 해제
+  - AdMob 앱 ID: ca-app-pub-1474045642143501~6266144531 (AndroidManifest에 등록)
+
+8. 다국어 시스템 (AppTexts)
+--------------------------------------------------------------------------------
+- static 언어 상태: _currentLang (기본 '한국어')
+- 키-값 맵: 한국어 / English / 日本語 3개 언어, 동일 키 집합 (gameStart, recordView, settings,
+  elapsedTime, settingsTitle, goToMain, restartGame, soundEffects, close, homeTooltip,
+  recordScreenTitle, bestRecord, totalPlays, playsUnit, totalTime, minutesUnit, averageTime,
+  privacyPolicy, fifteenPuzzle, fifteenReadyMessage, fifteenNewRecord, fifteenSuccess,
+  fifteenPlayAgain, fifteenHome)
+- get(key): 현재 언어 미존재 시 한국어 폴백, 없으면 키 문자열 그대로 반환
+- setLanguage(lang): 메모리 반영 + SharedPreferences 'selected_language' 키에 저장
+- 시간 포맷 함수: formatTimeSec / formatTimeMinSec — 언어에 따라 '초/s/秒', '분/m/分' 접미사 차등 적용
+- main()에서 시작 시 저장 언어를 먼저 로드하므로 언어 설정이 앱 재시작 후에도 유지됨
+
+9. 로컬 저장 설계 (SharedPreferences 키 목록)
+--------------------------------------------------------------------------------
+| 키                              | 유형 | 용도                                    | 사용처            |
+|---------------------------------|------|-----------------------------------------|-------------------|
+| selected_language               | Str  | 선택 언어                               | main/설정/메인    |
+| isSoundOn                       | Bool | 효과음 on/off (기본 true)               | 설정/게임/보드    |
+| isBgmOn                         | Bool | BGM on/off (기본 true, 미사용 중)       | 설정              |
+| fifteenBestTimeMilliseconds_{n} | Int  | 모드별 최고 기록(ms)                    | 게임 화면         |
+| fifteenTotalPlays_{n}           | Int  | 모드별 총 플레이 횟수                   | 게임 화면         |
+| fifteenTotalTimeElapsed_{n}     | Int  | 모드별 누적 플레이 시간(ms)             | 게임 화면         |
+| bestTimeMilliseconds            | Int  | 최고 기록(ms) [레거시 키]               | 기록 화면         |
+| totalPlays                      | Int  | 총 플레이 횟수 [레거시 키]              | 기록 화면         |
+| totalTimeElapsed                | Int  | 누적 시간(ms) [레거시 키]               | 기록 화면         |
+  (n = gridSize, 4 또는 5)
+
+10. 사운드 설계
+--------------------------------------------------------------------------------
+- assets/sounds/ 아래 4종 (audioplayers AssetSource 사용)
+  * start.mp3 : 게임 시작(카운트다운 시작) 시 재생
+  * slide.mp3 : 타일 이동 시 재생
+  * clear.mp3 : 퍼즐 성공 시 재생
+  * tap.mp3   : 현재 사용처 미확인 (예약/미사용)
+- 설정(isSoundOn)이 false면 모든 사운드 무시, 재생 전 stop()으로 중복 재생 방지
+
+11. 광고 설계 (AdMob)
+--------------------------------------------------------------------------------
+- 배너 광고만 사용 (전면/보상형 없음)
+- 메인 / 게임 / 기록 / 설정 화면 하단에 각각 AdBannerWidget 배치 (화면당 1개)
+- 테스트용 유닛ID는 주석 처리되어 있고 실서비스 ID 사용 중
+- AndroidManifest에 INTERNET 권한 + APPLICATION_ID 메타데이터 등록
+
+12. 부가 기능
+--------------------------------------------------------------------------------
+- 인앱 업데이트 (in_app_update): 메인 화면 진입 시 확인, immediateUpdateAllowed면 즉시 업데이트 실행
+- 개인정보처리방침: url_launcher로 외부 웹 페이지 오픈
+- 릴리스 서명: key.properties(업로드 키) 존재 시 release 서명, 없으면 debug 서명 폴백 (key.properties.example 제공)
+
+13. 테스트 설계 (test/)
+--------------------------------------------------------------------------------
+- fifteen_puzzle_state_test.dart: moveTile 슬라이드 이동 규칙 단위 테스트 5건
+  * 같은 행 왼쪽/오른쪽 타일 탭 시 행 밀림
+  * 같은 열 타일 탭 시 세로 밀림
+  * 대각선(같은 행/열 아님) 이동 불가
+  * 빈칸 자신은 이동 불가
+- widget_test.dart: 앱 스모크 테스트 — 'Cylinder Spinner Puzzle' 텍스트 존재 확인
+  ※ 현재 메인 화면 UI와 불일치(해당 텍스트 없음)하여 테스트 실패 가능성 있음 (이슈 3 참조)
+
+14. 빌드/배포 설정
+--------------------------------------------------------------------------------
+- Android: applicationId com.han.fifteen, minSdk/targetSdk/compileSdk는 Flutter 기본값 사용,
+  Java/Kotlin 17, release는 minify/shrink off
+- iOS/macOS/Windows/Linux/Web 플랫폼 폴더 기본 생성됨 (주 타깃은 Android/iOS로 보임)
+- flutter_launcher_icons: assets/icon/icon.png 기준 Android/iOS 아이콘 생성 설정
+- 루트에 upload_certificate.pem / upload-key.jks 존재 (Play 스토어 업로드 키 관리)
+
+15. 발견된 이슈 및 개선 제안
+--------------------------------------------------------------------------------
+[이슈 1] TutorialScreen 중복 정의
+  - tutorial_screen.dart와 blank_page.dart가 동일한 클래스명(TutorialScreen)을 정의.
+    동시 import 시 컴파일 오류. 두 파일 모두 메인 화면에서 진입 경로가 없어 미사용 상태.
+  - 제안: 사용하지 않으면 삭제하거나, 튜토리얼 콘텐츠를 재구현하고 하나만 유지.
+
+[이슈 2] 기록 키 불일치
+  - 게임 화면은 모드별 키(fifteenBestTimeMilliseconds_{n} 등)로 저장하지만,
+    기록 화면은 레거시 키(bestTimeMilliseconds, totalPlays, totalTimeElapsed)만 읽어
+    게임 후 기록 화면에 실제 기록이 표시되지 않음.
+  - 제안: 기록 화면에서 모드별 키를 읽어 4x4/5x5를 함께 표시하거나,
+           공통 키로 통일.
+
+[이슈 3] 위젯 테스트 실패 가능
+  - widget_test.dart가 'Cylinder Spinner Puzzle' 텍스트를 기대하지만 현재 메인 화면에 해당 텍스트가 없음.
+  - 제안: 테스트 기대 문자열을 실제 화면 요소(예: 메뉴 버튼 텍스트)로 수정.
+
+[이슈 4] BGM 설정 미구현
+  - SettingsScreen에 _isBgmOn 상태와 isBgmOn 저장 로직만 있고 UI 항목이 없음.
+  - 제안: BGM 기능 도입 시 스위치 추가, 아니면 상태/저장 코드 정리.
+
+[이슈 5] tap.mp3 미사용
+  - tap.mp3가 코드에서 참조되지 않음.
+
+[이슈 6] 이전 게임(실린더 퍼즐) 잔재
+  - tutorial_screen.dart의 데이터는 실린더 색상 퍼즐 설명(게임 목표/실린더 회전/구슬 이동)으로,
+    현재 15퍼즐 게임과 내용이 맞지 않음. 메인 화면에서도 진입 경로가 제거됨.
+
+16. 화면·모듈 요약 테이블
+--------------------------------------------------------------------------------
+| 모듈 (파일)                  | 역할                                   | 주요 기능                                |
+|------------------------------|----------------------------------------|------------------------------------------|
+| main.dart                    | 진입점                                 | 언어 로드, AdMob 초기화, 앱 실행         |
+| models/fifteen_puzzle_state  | 게임 로직 모델                         | 초기화/셔플/이동/성공판정/해결가능성     |
+| screens/main_screen          | 홈                                     | 메뉴 3종, 모드 선택, 언어 팝업, 버전, 광고 |
+| screens/fifteen_puzzle_screen| 게임                                   | 카운트다운, 타이머, 성공/설정 팝업, 광고  |
+| screens/record_screen        | 기록/통계                              | 최고기록/횟수/누적/평균 표시, 광고        |
+| screens/settings_screen      | 설정                                   | 언어/효과음/개인정보방침, 버전, 광고      |
+| screens/tutorial_screen      | 튜토리얼 (미사용)                      | 헤더 + 광고만 존재                       |
+| screens/blank_page           | 임시 페이지 (미사용, 클래스 중복)      | '준비 중입니다.' 표시                    |
+| widgets/fifteen_puzzle_board | 퍼즐 보드 UI                           | GridView 렌더링, 탭 이동, 효과음          |
+| widgets/ad_banner_widget     | 광고 공통 위젯                         | 배너 로드/표시/해제                       |
+| utils/app_texts              | 다국어/포맷 유틸                        | 3개 언어 맵, 시간 포맷                    |
+
+================================================================================
+  끝
+================================================================================
