@@ -34,6 +34,11 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
       await _audioPlayer.play(AssetSource('sounds/start.mp3'));
     } catch (e) {
       debugPrint("시작 사운드 재생 실패: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사운드 재생 중 오류가 발생했습니다.')),
+        );
+      }
     }
   }
 
@@ -44,6 +49,11 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
       await _audioPlayer.play(AssetSource('sounds/clear.mp3'));
     } catch (e) {
       debugPrint("클리어 사운드 재생 실패: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사운드 재생 중 오류가 발생했습니다.')),
+        );
+      }
     }
   }
 
@@ -54,6 +64,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
       await _audioPlayer.play(AssetSource('sounds/slide.mp3'));
     } catch (e) {
       debugPrint("슬라이드 사운드 재생 실패: $e");
+      // 슬라이드 사운드는 너무 자주 발생하므로 SnackBar를 띄우지 않음
     }
   }
 
