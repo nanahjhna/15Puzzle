@@ -4,23 +4,23 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
+    // 💡 org.jetbrains.kotlin.android 삭제 -> Built-in Kotlin 경고 해결
 }
 
-// Release signing key 설정
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
-
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
     namespace = "com.han.fifteen"
-    
-    // compileSdk를 flutter 기본값과 동기화하거나 targetSdk와 일치시킵니다.
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
 
+    // 💡 요구되는 Android NDK 버전 명시
+    ndkVersion = "28.2.13676358"
+
+    // 💡 Java 컴파일러 버전을 Java 17로 명시하여 Kotlin과 맞춤
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -29,42 +29,31 @@ android {
     defaultConfig {
         applicationId = "com.han.fifteen"
         minSdk = flutter.minSdkVersion
-        // targetSdk를 임의로 고정하는 대신 플러터 기본값을 사용하거나 
-        // 꼭 필요하다면 compileSdk와 동일하게 맞추는 것이 안전합니다.
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
-    // Release 서명 설정 (key.properties가 없을 경우 대비 안전장치 추가)
     signingConfigs {
         create("release") {
-            val hasKeyProps = keystoreProperties.isNotEmpty()
-            keyAlias = if (hasKeyProps) keystoreProperties["keyAlias"] as String else ""
-            keyPassword = if (hasKeyProps) keystoreProperties["keyPassword"] as String else ""
-            storeFile = if (hasKeyProps && keystoreProperties["storeFile"] != null) file(keystoreProperties["storeFile"] as String) else null
-            storePassword = if (hasKeyProps) keystoreProperties["storePassword"] as String else ""
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
         }
     }
 
     buildTypes {
         release {
-            // key.properties가 있을 때만 release 서명 적용, 없으면 debug 서명으로 폴백
-            // (CI/신규 PC에서 서명 없이도 빌드 가능하도록)
-            signingConfig = if (keystoreProperties.isNotEmpty()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
-            isMinifyEnabled = false
-            isShrinkResources = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
 
+// 💡 Kotlin 컴파일러의 JVM Target을 Java 버전(17)에 맞춰 통일
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
