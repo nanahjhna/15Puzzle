@@ -70,10 +70,10 @@ class _MainScreenState extends State<MainScreen> {
         return AlertDialog(
           backgroundColor: const Color(0xFF283593),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            '언어 / Language / 言語',
+          title: Text(
+            AppTexts.get('selectLanguage'), // 📌 다국어 적용
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -165,10 +165,10 @@ class _MainScreenState extends State<MainScreen> {
         return AlertDialog(
           backgroundColor: const Color(0xFF283593),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
-            '게임 모드 선택\nSelect Game Mode',
+          title: Text(
+            AppTexts.get('gameModeSelect'), // 📌 다국어 적용
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -269,7 +269,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.language, color: Colors.white),
-            tooltip: 'Change Language',
+            tooltip: AppTexts.get('changeLanguageTooltip'), // 📌 다국어 적용
             onPressed: _showLanguageDialog,
           ),
           const SizedBox(width: 8),

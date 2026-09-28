@@ -142,9 +142,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  '언어 / Language',
-                                  style: TextStyle(
+                                Text(
+                                  AppTexts.get('selectLanguage'), // 📌 다국어 적용
+                                  style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,

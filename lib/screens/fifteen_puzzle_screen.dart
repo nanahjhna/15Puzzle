@@ -278,7 +278,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${AppTexts.get('elapsedTime')}: $timeStr',
+                  AppTexts.pair('elapsedTime', timeStr),
                   style: const TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),

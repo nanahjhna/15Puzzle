@@ -52,6 +52,11 @@ class AppTexts {
       'moreApps': '다른 앱 구경하기',
       'moreAppsTitle': '다른 앱들도 구경해 보세요!',
       'moreAppsMessage': '아래 앱을 눌러 스토어에서 확인해 보세요.',
+      // 📌 언어 선택 / 게임 모드 / 오류 메시지 추가 키값
+      'selectLanguage': '언어 선택',
+      'gameModeSelect': '게임 모드 선택',
+      'changeLanguageTooltip': '언어 변경',
+      'soundPlayError': '사운드 재생 중 오류가 발생했습니다.',
     },
     'English': {
       'gameStart': 'Start Game',
@@ -74,7 +79,7 @@ class AppTexts {
       'minutesUnit': 'min',
       'averageTime': 'Average Time',
       'privacyPolicy': 'Privacy Policy',
-      'fifteenPuzzle': '15 Puzzle',
+      'fifteenPuzzle': 'Game Start',
       'fifteenReadyMessage': 'Arrange the numbers in order.',
       'fifteenNewRecord': '👑 New Record!',
       'fifteenSuccess': '🎉 15 Puzzle Cleared!',
@@ -84,6 +89,11 @@ class AppTexts {
       'moreApps': 'More Apps',
       'moreAppsTitle': 'Check Out My Other Apps!',
       'moreAppsMessage': 'Tap an app below to check it out in the store.',
+      // 📌 언어 선택 / 게임 모드 / 오류 메시지 추가 키값
+      'selectLanguage': 'Select Language',
+      'gameModeSelect': 'Select Game Mode',
+      'changeLanguageTooltip': 'Change Language',
+      'soundPlayError': 'An error occurred while playing the sound.',
     },
     '日本語': {
       'gameStart': 'ゲーム開始',
@@ -106,7 +116,7 @@ class AppTexts {
       'minutesUnit': '分',
       'averageTime': '平均クリアタイム',
       'privacyPolicy': 'プライバシーポリシー',
-      'fifteenPuzzle': '15パズル',
+      'fifteenPuzzle': 'ゲームスタート',
       'fifteenReadyMessage': '番号を順番に並べてください。',
       'fifteenNewRecord': '👑 新記録！',
       'fifteenSuccess': '🎉 15パズルクリア！',
@@ -116,12 +126,23 @@ class AppTexts {
       'moreApps': '他のアプリを見る',
       'moreAppsTitle': '他のアプリもチェック！',
       'moreAppsMessage': '下のアプリをタップしてストアで確認できます。',
+      // 📌 언어 선택 / 게임 모드 / 오류 메시지 추가 키값
+      'selectLanguage': '言語を選択',
+      'gameModeSelect': 'ゲームモード選択',
+      'changeLanguageTooltip': '言語を変更',
+      'soundPlayError': 'サウンドの再生中にエラーが発生しました。',
     },
   };
 
   // 📌 텍스트를 가져오는 함수
   static String get(String key) {
     return _texts[_currentLang]?[key] ?? _texts['한국어']?[key] ?? key;
+  }
+
+  // 📌 라벨과 값을 합쳐서 표시 (예: 소요 시간: 12.34초)
+  // 3개 언어 모두 반콜론 + 공백이 표준이라 구분자는 고정입니다.
+  static String pair(String key, String value) {
+    return '${get(key)}: $value';
   }
 
   // 📌 초 단위 시간 포맷 (예: 12.34초 / 12.34s / 12.34秒)

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../models/fifteen_puzzle_state.dart';
+import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
 
 class FifteenPuzzleBoard extends StatefulWidget {
   final FifteenPuzzleState puzzleState;
@@ -36,7 +37,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
       debugPrint("시작 사운드 재생 실패: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사운드 재생 중 오류가 발생했습니다.')),
+          SnackBar(content: Text(AppTexts.get('soundPlayError'))), // 📌 다국어 적용
         );
       }
     }
@@ -51,7 +52,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
       debugPrint("클리어 사운드 재생 실패: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사운드 재생 중 오류가 발생했습니다.')),
+          SnackBar(content: Text(AppTexts.get('soundPlayError'))), // 📌 다국어 적용
         );
       }
     }
