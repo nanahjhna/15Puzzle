@@ -57,6 +57,13 @@ kotlin {
     }
 }
 
+dependencies {
+    // 💡 MainActivity의 enableEdgeToEdge() / SystemBarStyle 사용처
+    implementation("androidx.activity:activity:1.9.0")
+    // 💡 FlutterFragmentActivity → FragmentActivity 상속 체인에 필요
+    implementation("androidx.fragment:fragment-ktx:1.7.1")
+}
+
 flutter {
     source = "../.."
 }

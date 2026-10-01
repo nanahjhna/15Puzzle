@@ -1,17 +1,17 @@
 ================================================================================
-  프로젝트 분석 설계서 (Magic Can Puzzle / 15Puzzle)
+  프로젝트 분석 설계서 (15Puzzle / 15Puzzle)
   작성일: 2026-09-22
 ================================================================================
 
 1. 프로젝트 개요
 --------------------------------------------------------------------------------
-- 프로젝트명      : fifteenPuzzle (앱 표시명: fifteenPuzzle, 타이틀: Magic Can Puzzle)
+- 프로젝트명      : fifteenPuzzle (앱 표시명: fifteenPuzzle, 타이틀: 15Puzzle)
 - 플랫폼          : Flutter (Android / iOS / Web / Windows / macOS / Linux 멀티플랫폼 지원)
 - 패키지명        : fifteenPuzzle (Android applicationId: com.han.fifteen)
 - 버전            : 1.0.0+5
 - Dart SDK        : ^3.12.2
 - 게임 종류       : 숫자 15 퍼즐 (슬라이딩 퍼즐) - 4x4 / 5x5 모드 지원
-- 핵심 기능       : 게임 플레이, 타이머, 최고 기록 저장, 통계(플레이 횟수/누적 시간/평균 시간),
+- 핵심 기능       : 게임 플레이, 타이머, 모드별 상위 3개 기록 저장, 통계(플레이 횟수/누적 시간/평균 시간),
                   다국어 지원(한국어/English/日本語), 효과음, AdMob 배너 광고, 인앱 업데이트 확인
 
 2. 기술 스택 및 의존성 (pubspec.yaml)
@@ -76,7 +76,7 @@ lib/
   하단: AdMob 배너 광고
 
 [기록 화면 (RecordScreen)]
-  최고 기록 / 플레이 횟수 / 누적 플레이 시간 / 평균 클리어 타임 표시
+  4x4 / 5x5 모드별 상위 3개 기록 / 플레이 횟수 / 누적 플레이 시간 / 평균 클리어 타임 표시
   좌측 상단 홈 버튼 → popUntil(root)로 메인 복귀
   하단: AdMob 배너 광고
 
@@ -89,7 +89,7 @@ lib/
 --------------------------------------------------------------------------------
 5-1. main.dart (앱 진입점)
   - 플랫폼 확인 후 AdMob 초기화 (웹 제외, Android/iOS만)
-  - MaterialApp: title 'Magic Can Puzzle', ThemeData(primarySwatch: Colors.pink)
+  - MaterialApp: title '15Puzzle', ThemeData(primarySwatch: Colors.pink)
   - home = MainScreen, debugShowCheckedModeBanner = false
 
 5-2. MainScreen (메인 화면)
@@ -118,7 +118,7 @@ lib/
     ③ 게임 진행: FifteenPuzzleBoard 위젯에서 타일 탭 → moveTile() → onUpdate 콜백 → 화면 갱신 + _checkSuccess()
        - !_isPlaying 상태에서는 AbsorbPointer로 보드 입력 차단
     ④ 성공 판정: puzzleState.isSuccess && _isPlaying → 타이머 정지, clear.mp3 재생
-       - 최고 기록 갱신 여부 판정 → _saveBestTime() (신기록 시 '👑 신기록!' 표시)
+       - 모드별 상위 3개 완주 기록 갱신 (신기록 시 '👑 신기록!' 표시)
        - 통계 갱신: _updateGameStats() (플레이 횟수 +1, 누적 시간 합산)
        - 성공 팝업: 소요 시간 표시, [홈으로] / [다시 하기] 버튼
   - 인게임 설정 팝업 (우측 상단 설정 아이콘)
@@ -130,8 +130,8 @@ lib/
 
 5-4. RecordScreen (기록 화면)
   - 배경: background.jpg, 좌측 상단 홈 버튼(popUntil root), 중앙 타이틀 '🏆 게임 기록'
-  - SharedPreferences에서 3종 키 로드 후 표시
-    * 최고 기록(bestTimeMilliseconds) - 별 아이콘(앰버)
+  - SharedPreferences에서 모드별 기록 키 로드 후 표시
+    * 상위 3개 완주 기록(fifteenTopTimesMilliseconds_{n}) - 빠른 순서로 표시
     * 플레이 횟수(totalPlays) / 누적 플레이 시간(totalTimeElapsed) - 2열 통계 카드
     * 평균 클리어 타임(누적시간 ÷ 플레이 횟수) - 하단 통계 카드
   - 시간 포맷: AppTexts.formatTimeSec / formatTimeMinSec (분 단위 미만이면 초 단위 표기)
@@ -211,6 +211,7 @@ lib/
 | isSoundOn                       | Bool | 효과음 on/off (기본 true)               | 설정/게임/보드    |
 | isBgmOn                         | Bool | BGM on/off (기본 true, 미사용 중)       | 설정              |
 | fifteenBestTimeMilliseconds_{n} | Int  | 모드별 최고 기록(ms)                    | 게임 화면         |
+| fifteenTopTimesMilliseconds_{n} | StrList | 모드별 상위 3개 기록(ms 문자열)       | 게임/기록 화면    |
 | fifteenTotalPlays_{n}           | Int  | 모드별 총 플레이 횟수                   | 게임 화면         |
 | fifteenTotalTimeElapsed_{n}     | Int  | 모드별 누적 플레이 시간(ms)             | 게임 화면         |
 | bestTimeMilliseconds            | Int  | 최고 기록(ms) [레거시 키]               | 기록 화면         |

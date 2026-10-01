@@ -11,7 +11,7 @@ import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
 // 📌 홍보 앱 목록 (팝업에서 스토어로 연결됩니다)
 // 여기에 { 이름, 패키지명 }만 추가하면 팝업에 자동 반영됩니다.
 const List<_PromoApp> _promoApps = [
-  _PromoApp(name: 'Magic Can Puzzle', packageName: 'com.han.puzzle'),
+  _PromoApp(name: '15Puzzle', packageName: 'com.han.puzzle'),
 ];
 
 class _PromoApp {
@@ -29,18 +29,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  String _appVersion = 'Unknown';
+  // 📌 버전 정보를 저장할 변수 (불러오기 전에는 비워두고 화면에서 감춘다)
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
-    _checkForUpdate();
-    _initPackageInfo();
+    // 📌 initState에서 바로 다이얼로그를 띄우면 아직 마운트가 안 된 시점이므로 프레임 이후로 미룬다
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForUpdate();
+      _initPackageInfo();
+    });
   }
 
   Future<void> _initPackageInfo() async {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      if (!mounted) return;
       setState(() {
         _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       });
@@ -52,14 +57,68 @@ class _MainScreenState extends State<MainScreen> {
   Future<void> _checkForUpdate() async {
     try {
       AppUpdateInfo info = await InAppUpdate.checkForUpdate();
+      // 📌 in_app_update 5.x는 즉시/유연 업데이트를 enum이 아니라 immediateUpdateAllowed로 구분한다.
+      // 사용자가 "나중에"로 미룬 경우에도 다시 안내할 수 있도록 유연 업데이트를 처리한다.
       if (info.updateAvailability == UpdateAvailability.updateAvailable) {
         if (info.immediateUpdateAllowed) {
           await InAppUpdate.performImmediateUpdate();
+        } else if (info.flexibleUpdateAllowed) {
+          if (!mounted) return;
+          if (await _showFlexibleUpdateDialog() && mounted) {
+            await InAppUpdate.startFlexibleUpdate();
+          }
         }
       }
     } catch (e) {
       debugPrint('Update check failed: $e');
     }
+  }
+
+  // 📌 플렉시블 업데이트를 진행할지 묻는 다이얼로그
+  Future<bool> _showFlexibleUpdateDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF283593),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            AppTexts.get('updateAvailableTitle'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            AppTexts.get('updateAvailableMessage'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white70),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(AppTexts.get('updateLater')),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(AppTexts.get('updateNow'), style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
   }
 
   // 📌 우측 상단 지구본 아이콘을 눌렀을 때 실행되는 언어 선택 팝업
@@ -255,14 +314,17 @@ class _MainScreenState extends State<MainScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
           child: Center(
-            child: Text(
-              'ver : $_appVersion',
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            // 📌 버전 정보를 읽기 전에는 감춘다
+            child: _appVersion.isEmpty
+                ? const SizedBox.shrink()
+                : Text(
+                    'ver : $_appVersion',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
           ),
         ),
         // 📌 상단 오른쪽에 지구본(언어 변경) 아이콘 배치
@@ -359,7 +421,7 @@ class _MainScreenState extends State<MainScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          shadowColor: Colors.black.withOpacity(0.2),
+          shadowColor: Colors.black.withValues(alpha: 0.2),
         ),
         onPressed: onPressed,
         child: Text(

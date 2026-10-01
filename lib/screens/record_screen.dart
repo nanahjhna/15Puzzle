@@ -50,7 +50,6 @@ class _RecordScreenState extends State<RecordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -93,54 +92,55 @@ class _RecordScreenState extends State<RecordScreen> {
               ),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Colors.amber))
+                    ? const Center(
+                        child: CircularProgressIndicator(color: Colors.amber),
+                      )
                     : DefaultTabController(
-                  length: 2,
-                  child: Column(
-                    children: [
-                      // 📌 4x4 / 5x5 모드 선택 탭
-                      Container(
-                        height: 48,
-                        margin: const EdgeInsets.symmetric(horizontal: 36.0),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: TabBar(
-                          dividerColor: Colors.transparent,
-                          indicator: BoxDecoration(
-                            color: const Color(0xFF9C27B0),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          labelColor: Colors.white,
-                          unselectedLabelColor: Colors.white70,
-                          labelStyle: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          tabs: const [
-                            Tab(text: '4 X 4'),
-                            Tab(text: '5 X 5'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: TabBarView(
+                        length: 2,
+                        child: Column(
                           children: [
-                            _buildRecordContent(_record4!),
-                            _buildRecordContent(_record5!),
+                            // 📌 4x4 / 5x5 모드 선택 탭
+                            Container(
+                              height: 48,
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 36.0,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: TabBar(
+                                dividerColor: Colors.transparent,
+                                indicator: BoxDecoration(
+                                  color: const Color(0xFF9C27B0),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                labelColor: Colors.white,
+                                unselectedLabelColor: Colors.white70,
+                                labelStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                tabs: const [
+                                  Tab(text: '4 X 4'),
+                                  Tab(text: '5 X 5'),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: TabBarView(
+                                children: [
+                                  _buildRecordContent(_record4!),
+                                  _buildRecordContent(_record5!),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
               ),
-              const SizedBox(
-                height: 50,
-                child: AdBannerWidget(),
-              ),
+              const SizedBox(height: 50, child: AdBannerWidget()),
               const SizedBox(height: 5),
             ],
           ),
@@ -158,19 +158,15 @@ class _RecordScreenState extends State<RecordScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildRecordCard(
-            title: AppTexts.get('bestRecord'), // 📌 다국어 적용
-            value: _formatTime(record.bestTimeMs),
-            icon: Icons.star,
-            color: Colors.amber,
-          ),
+          _buildTopRecordsCard(record),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _buildStatCard(
                   title: AppTexts.get('totalPlays'), // 📌 다국어 적용
-                  value: '${record.totalPlays} ${AppTexts.get('playsUnit')}', // 📌 다국어 적용
+                  value:
+                      '${record.totalPlays} ${AppTexts.get('playsUnit')}', // 📌 다국어 적용
                   icon: Icons.play_arrow_rounded,
                 ),
               ),
@@ -178,7 +174,8 @@ class _RecordScreenState extends State<RecordScreen> {
               Expanded(
                 child: _buildStatCard(
                   title: AppTexts.get('totalTime'), // 📌 다국어 적용
-                  value: '${totalMinutes.toStringAsFixed(1)} ${AppTexts.get('minutesUnit')}', // 📌 다국어 적용
+                  value:
+                      '${totalMinutes.toStringAsFixed(1)} ${AppTexts.get('minutesUnit')}', // 📌 다국어 적용
                   icon: Icons.history,
                 ),
               ),
@@ -195,43 +192,98 @@ class _RecordScreenState extends State<RecordScreen> {
     );
   }
 
-  Widget _buildRecordCard({required String title, required String value, required IconData icon, required Color color}) {
+  Widget _buildTopRecordsCard(_ModeRecord record) {
+    const rankIcons = [Icons.looks_one, Icons.looks_two, Icons.looks_3];
+    const rankColors = [Colors.amber, Colors.white70, Color(0xFFCD7F32)];
+    final rankLabels = [
+      AppTexts.get('firstPlace'),
+      AppTexts.get('secondPlace'),
+      AppTexts.get('thirdPlace'),
+    ];
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.5), width: 2),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+        border: Border.all(
+          color: Colors.amber.withValues(alpha: 0.5),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color, size: 26),
+              const Icon(Icons.emoji_events, color: Colors.amber, size: 26),
               const SizedBox(width: 8),
-              Text(title, style: TextStyle(fontSize: 17, color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.bold)),
+              Text(
+                AppTexts.get('topRecords'),
+                style: TextStyle(
+                  fontSize: 17,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: color, letterSpacing: 1.5),
-          ),
+          for (var index = 0; index < 3; index++) ...[
+            if (index > 0) const Divider(color: Colors.white24, height: 16),
+            Row(
+              children: [
+                Icon(rankIcons[index], color: rankColors[index], size: 24),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    rankLabels[index],
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  _formatTime(
+                    index < record.topTimesMs.length
+                        ? record.topTimesMs[index]
+                        : null,
+                  ),
+                  style: TextStyle(
+                    color: rankColors[index],
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatCard({required String title, required String value, required IconData icon}) {
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +304,11 @@ class _RecordScreenState extends State<RecordScreen> {
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
@@ -264,6 +320,7 @@ class _RecordScreenState extends State<RecordScreen> {
 class _ModeRecord {
   final int gridSize;
   int? bestTimeMs;
+  List<int> topTimesMs = [];
   int totalPlays = 0;
   int totalTimeMs = 0;
 
@@ -272,6 +329,16 @@ class _ModeRecord {
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     bestTimeMs = prefs.getInt('fifteenBestTimeMilliseconds_$gridSize');
+    topTimesMs =
+        (prefs.getStringList('fifteenTopTimesMilliseconds_$gridSize') ?? [])
+            .map(int.tryParse)
+            .whereType<int>()
+            .toList()
+          ..sort();
+    if (topTimesMs.isEmpty && bestTimeMs != null) {
+      topTimesMs = [bestTimeMs!];
+    }
+    topTimesMs = topTimesMs.take(3).toList();
     totalPlays = prefs.getInt('fifteenTotalPlays_$gridSize') ?? 0;
     totalTimeMs = prefs.getInt('fifteenTotalTimeElapsed_$gridSize') ?? 0;
   }

@@ -15,11 +15,10 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   // 설정 상태값
   bool _isSoundOn = true;
-  bool _isBgmOn = true;
   String _selectedLang = AppTexts.currentLang; // 📌 현재 선택된 언어 상태
 
-  // 버전 정보를 저장할 변수
-  String _appVersion = 'Unknown';
+  // 📌 버전 정보를 저장할 변수 (불러오기 전에는 비워두고 화면에서 감춘다)
+  String _appVersion = '';
 
   @override
   void initState() {
@@ -31,24 +30,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // 📌 SharedPreferences를 이용해 설정 불러오기
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _isSoundOn = prefs.getBool('isSoundOn') ?? true;
-      _isBgmOn = prefs.getBool('isBgmOn') ?? true;
       _selectedLang = prefs.getString('selected_language') ?? '한국어';
     });
   }
 
   // 📌 설정 변경 시 SharedPreferences에 저장하기
-  Future<void> _saveSettings(bool soundOn, bool bgmOn) async {
+  Future<void> _saveSettings(bool soundOn) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isSoundOn', soundOn);
-    await prefs.setBool('isBgmOn', bgmOn);
   }
 
   // 앱 버전 및 빌드 번호 가져오기
   Future<void> _initPackageInfo() async {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      if (!mounted) return;
       setState(() {
         _appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
       });
@@ -72,8 +71,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 배경이 AppBar 영역 뒤까지 확장되도록 설정 (상태바까지 덮음)
-      extendBodyBehindAppBar: true,
       // MainScreen과 동일한 배경 이미지 적용
       body: Container(
         decoration: const BoxDecoration(
@@ -132,9 +129,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4), // 반투명 검은색 배경으로 텍스트 가독성 확보
+                          color: Colors.black.withValues(alpha: 0.4), // 반투명 검은색 배경으로 텍스트 가독성 확보
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                         ),
                         child: Column(
                           children: [
@@ -182,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 setState(() {
                                   _isSoundOn = value;
                                 });
-                                _saveSettings(_isSoundOn, _isBgmOn); // 📌 변경 즉시 저장
+                                _saveSettings(_isSoundOn); // 📌 변경 즉시 저장
                               },
                             ),
                             const Divider(color: Colors.white24, height: 24),
@@ -234,17 +231,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 5),
 
-            // 화면 최하단 버전 표시
+            // 화면 최하단 버전 표시 (버전 정보를 읽기 전에는 감춘다)
             Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
-              child: Text(
-                'ver : $_appVersion',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: _appVersion.isEmpty
+                  ? const SizedBox.shrink()
+                  : Text(
+                      'ver : $_appVersion',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
             ),
           ],
         ),

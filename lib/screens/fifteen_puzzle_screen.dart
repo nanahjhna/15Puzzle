@@ -18,7 +18,7 @@ class FifteenPuzzleScreen extends StatefulWidget {
 
 class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   final GlobalKey<FifteenPuzzleBoardState> _boardKey =
-  GlobalKey<FifteenPuzzleBoardState>();
+      GlobalKey<FifteenPuzzleBoardState>();
   late final FifteenPuzzleState _puzzleState;
 
   Timer? _gameTimer;
@@ -64,19 +64,41 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
 
   // 📌 그리드 크기(4x4, 5x5)에 따라 다른 Best Time 키 사용
   String get _bestTimeKey => 'fifteenBestTimeMilliseconds_${widget.gridSize}';
+  String get _topTimesKey => 'fifteenTopTimesMilliseconds_${widget.gridSize}';
 
   Future<void> _loadBestTime() async {
     final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _bestMilliseconds = prefs.getInt(_bestTimeKey);
     });
   }
 
-  Future<void> _saveBestTime(int timeInMs) async {
+  Future<void> _saveCompletionRecord(int timeInMs) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_bestTimeKey, timeInMs);
+    final previousBest = prefs.getInt(_bestTimeKey);
+    final topTimes = (prefs.getStringList(_topTimesKey) ?? [])
+        .map(int.tryParse)
+        .whereType<int>()
+        .toList();
+
+    if (topTimes.isEmpty && previousBest != null) {
+      topTimes.add(previousBest);
+    }
+    topTimes.add(timeInMs);
+    topTimes.sort();
+    await prefs.setStringList(
+      _topTimesKey,
+      topTimes.take(3).map((time) => time.toString()).toList(),
+    );
+
+    final bestTime = previousBest == null || timeInMs < previousBest
+        ? timeInMs
+        : previousBest;
+    await prefs.setInt(_bestTimeKey, bestTime);
+    if (!mounted) return;
     setState(() {
-      _bestMilliseconds = timeInMs;
+      _bestMilliseconds = bestTime;
     });
   }
 
@@ -96,15 +118,20 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) {
-        return WillPopScope(
-          onWillPop: () async => false,
+        return PopScope(
+          canPop: false, // 📌 시작 전에는 뒤로가기로 나갈 수 없도록 차단
           child: AlertDialog(
             backgroundColor: const Color(0xFF1E88E5), // 조금 더 밝고 선명한 블루 계열
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               '${AppTexts.get('fifteenPuzzle')} (${widget.gridSize}x${widget.gridSize})',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             content: Text(
               AppTexts.get('fifteenReadyMessage'),
@@ -148,17 +175,27 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white70),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const RecordScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const RecordScreen(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.emoji_events, color: Colors.amber),
-                      label: Text(AppTexts.get('recordView'), style: const TextStyle(color: Colors.white, fontSize: 16)),
+                      label: Text(
+                        AppTexts.get('recordView'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -172,6 +209,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
 
   void _startCountdown() {
     _countdownTimer?.cancel();
+    _gameTimer?.cancel(); // 📌 재시작 시 기존 게임 타이머가 계속 돌지 않도록 정리
     setState(() {
       _isCountdownActive = true;
       _countdownValue = 3;
@@ -181,6 +219,12 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
 
     _boardKey.currentState?.playStartSound();
 
+    _runCountdown();
+  }
+
+  // 📌 카운트다운 1초 틱을 담당합니다. 설정 다이얼로그에서 멈췄다가 이어서 실행할 때도 재사용합니다.
+  void _runCountdown() {
+    _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -192,6 +236,7 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
         });
       } else {
         timer.cancel();
+        _countdownTimer = null;
         setState(() {
           _isCountdownActive = false;
           _isPlaying = true;
@@ -226,10 +271,11 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
       _boardKey.currentState?.playClearSound();
 
       bool isNewRecord = false;
-      if (_bestMilliseconds == null || _millisecondsElapsed < _bestMilliseconds!) {
-        await _saveBestTime(_millisecondsElapsed);
+      if (_bestMilliseconds == null ||
+          _millisecondsElapsed < _bestMilliseconds!) {
         isNewRecord = true;
       }
+      await _saveCompletionRecord(_millisecondsElapsed);
       await _updateGameStats(_millisecondsElapsed);
 
       _showSuccessPopup(isNewRecord);
@@ -252,19 +298,29 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1E88E5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Column(
             children: [
               if (isNewRecord)
                 Text(
                   AppTexts.get('fifteenNewRecord'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.amber, fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               Text(
                 AppTexts.get('fifteenSuccess'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.greenAccent, fontSize: 26, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -272,14 +328,21 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black26,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
                   AppTexts.pair('elapsedTime', timeStr),
-                  style: const TextStyle(color: Colors.amber, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.amber,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -295,7 +358,9 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.white70),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () {
@@ -303,7 +368,13 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                       Navigator.pop(context);
                     },
                     icon: const Icon(Icons.home, color: Colors.white),
-                    label: Text(AppTexts.get('fifteenHome'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    label: Text(
+                      AppTexts.get('fifteenHome'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -313,7 +384,9 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
                       foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: () {
@@ -324,7 +397,13 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                       });
                       _startCountdown();
                     },
-                    child: Text(AppTexts.get('fifteenPlayAgain'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Text(
+                      AppTexts.get('fifteenPlayAgain'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -336,6 +415,12 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
   }
 
   void _showSettingsDialog(BuildContext context) {
+    // 📌 카운트다운 중 열면 다이얼로그 뒤에서 게임이 시작되지 않도록 틱도 함께 멈춘다
+    final bool wasCountingDown = _isCountdownActive;
+    if (wasCountingDown) {
+      _countdownTimer?.cancel();
+      _countdownTimer = null;
+    }
     if (_isPlaying) {
       _gameTimer?.cancel();
       _stopwatch.stop();
@@ -348,18 +433,25 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1E88E5),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Text(
                 AppTexts.get('settingsTitle'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               content: Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -369,11 +461,19 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.home, color: Colors.white, size: 22),
+                            const Icon(
+                              Icons.home,
+                              color: Colors.white,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               AppTexts.get('goToMain'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -382,8 +482,15 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                             Navigator.pop(context);
                             Navigator.pop(context);
                           },
-                          icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 16),
-                          style: IconButton.styleFrom(backgroundColor: Colors.white12, padding: const EdgeInsets.all(8)),
+                          icon: const Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white12,
+                            padding: const EdgeInsets.all(8),
+                          ),
                         ),
                       ],
                     ),
@@ -393,25 +500,38 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.refresh, color: Colors.amber, size: 22),
+                            const Icon(
+                              Icons.refresh,
+                              color: Colors.amber,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               AppTexts.get('restartGame'),
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
                         IconButton(
                           onPressed: () {
                             Navigator.pop(context);
-                            setState(() {
-                              _millisecondsElapsed = 0;
-                              _puzzleState.shuffle();
-                              _startCountdown();
-                            });
+                            _puzzleState.shuffle();
+                            // 📌 _startCountdown이 자체 setState를 호출하므로 바깥에서 감싸지 않는다
+                            _startCountdown();
                           },
-                          icon: const Icon(Icons.play_arrow, color: Colors.black, size: 18),
-                          style: IconButton.styleFrom(backgroundColor: Colors.amber, padding: const EdgeInsets.all(8)),
+                          icon: const Icon(
+                            Icons.play_arrow,
+                            color: Colors.black,
+                            size: 18,
+                          ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            padding: const EdgeInsets.all(8),
+                          ),
                         ),
                       ],
                     ),
@@ -419,9 +539,14 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     _buildSettingSwitch(
                       title: AppTexts.get('soundEffects'),
                       value: _isSoundOn,
-                      onChanged: (value) {
-                        setDialogState(() { _isSoundOn = value; });
+                      onChanged: (value) async {
+                        setDialogState(() {
+                          _isSoundOn = value;
+                        });
                         setState(() {});
+                        // 📌 게임 중 바꾼 효과음 설정도 저장해야 다음 실행에 유지된다
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('isSoundOn', value);
                       },
                     ),
                   ],
@@ -430,9 +555,18 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
               actionsAlignment: MainAxisAlignment.center,
               actions: [
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
                   onPressed: () => Navigator.pop(context),
-                  child: Text(AppTexts.get('close'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    AppTexts.get('close'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             );
@@ -440,18 +574,33 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
         );
       },
     ).then((_) {
-      if (_isPlaying) {
+      if (!mounted) return;
+      if (wasCountingDown && _isCountdownActive) {
+        // 📌 일시정지했던 카운트다운을 남은 값부터 이어서 실행
+        _runCountdown();
+      } else if (_isPlaying) {
         _stopwatch.start();
         _startTimer();
       }
     });
   }
 
-  Widget _buildSettingSwitch({required String title, required bool value, required ValueChanged<bool> onChanged}) {
+  Widget _buildSettingSwitch({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         Switch(value: value, onChanged: onChanged, activeColor: Colors.amber),
       ],
     );
@@ -473,7 +622,10 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 12.0,
+              ),
               child: Column(
                 children: [
                   Row(
@@ -481,16 +633,29 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.timer, color: Color(0xFFFFD700), size: 28),
+                          const Icon(
+                            Icons.timer,
+                            color: Color(0xFFFFD700),
+                            size: 28,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             _formatTime(),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.2),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
                           ),
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.white, size: 28),
+                        icon: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                         onPressed: () => _showSettingsDialog(context),
                       ),
                     ],
@@ -500,20 +665,20 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                     child: Center(
                       child: Container(
                         width: double.infinity,
-                        constraints: const BoxConstraints(maxWidth: 360, maxHeight: 360),
+                        constraints: const BoxConstraints(
+                          maxWidth: 360,
+                          maxHeight: 360,
+                        ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFE2A76F),
-                              Color(0xFFB87333),
-                            ],
+                            colors: [Color(0xFFE2A76F), Color(0xFFB87333)],
                           ),
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),
@@ -534,7 +699,10 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                                   },
                                 ),
                                 if (!_isPlaying)
-                                  const AbsorbPointer(absorbing: true, child: SizedBox.expand()),
+                                  const AbsorbPointer(
+                                    absorbing: true,
+                                    child: SizedBox.expand(),
+                                  ),
                               ],
                             ),
                           ),
@@ -550,11 +718,15 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
             ),
             if (_isCountdownActive)
               Container(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 child: Center(
                   child: Text(
                     '$_countdownValue',
-                    style: const TextStyle(fontSize: 100, fontWeight: FontWeight.bold, color: Colors.amber),
+                    style: const TextStyle(
+                      fontSize: 100,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
                   ),
                 ),
               ),

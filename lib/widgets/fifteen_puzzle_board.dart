@@ -21,10 +21,13 @@ class FifteenPuzzleBoard extends StatefulWidget {
 
 class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
   final AudioPlayer _audioPlayer = AudioPlayer();
+  // 📌 슬라이드 사운드는 한 번 플레이마다 연속으로 울리므로 저지연 전용 플레이어를 분리한다
+  final AudioPlayer _slidePlayer = AudioPlayer();
 
   @override
   void dispose() {
     _audioPlayer.dispose();
+    _slidePlayer.dispose();
     super.dispose();
   }
 
@@ -61,8 +64,12 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
   Future<void> _playSlideSound() async {
     if (!widget.isSoundOn) return;
     try {
-      await _audioPlayer.stop();
-      await _audioPlayer.play(AssetSource('sounds/slide.mp3'));
+      await _slidePlayer.stop();
+      // 📌 lowLatency 모드는 SoundPool을 써서 연속 재생 시 지연과 끊김이 줄어든다
+      await _slidePlayer.play(
+        AssetSource('sounds/slide.mp3'),
+        mode: PlayerMode.lowLatency,
+      );
     } catch (e) {
       debugPrint("슬라이드 사운드 재생 실패: $e");
       // 슬라이드 사운드는 너무 자주 발생하므로 SnackBar를 띄우지 않음
@@ -76,13 +83,11 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        double boardSize = constraints.maxWidth;
-        // 📌 그리드 크기에 맞춰 셀 크기 및 간격 계산 (5x5일 경우 간격을 조금 더 좁게 조절 가능)
-        double totalSpacing = (gridSize - 1) * 6.0;
-        double cellSize = (boardSize - 30 - totalSpacing) / gridSize;
-        if (cellSize > (gridSize == 5 ? 65 : 80)) {
-          cellSize = gridSize == 5 ? 65 : 80;
-        }
+        // 📌 컨테이너 패딩(12*2)과 내부 패딩(4*2)을 뺀 폭이 실제 보드 폭이다.
+        // 간격까지 제외해 계산한 셀 크기는 GridView가 강제하므로 글자 크기 계산에만 쓴다.
+        final double boardWidth = constraints.maxWidth - 32;
+        final double totalSpacing = (gridSize - 1) * 6.0;
+        final double cellSize = (boardWidth - totalSpacing) / gridSize;
 
         return Container(
           padding: const EdgeInsets.all(12),
@@ -98,7 +103,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -134,8 +139,6 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
                     }
                   },
                   child: Container(
-                    width: cellSize,
-                    height: cellSize,
                     decoration: BoxDecoration(
                       color: isEmpty ? Colors.transparent : null,
                       borderRadius: BorderRadius.circular(gridSize == 5 ? 8 : 12),
@@ -153,7 +156,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
                           ? null
                           : [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
+                          color: Colors.black.withValues(alpha: 0.25),
                           blurRadius: 4,
                           offset: const Offset(0, 3),
                         ),
@@ -171,7 +174,7 @@ class FifteenPuzzleBoardState extends State<FifteenPuzzleBoard> {
                         label,
                         style: TextStyle(
                           // 📌 5x5일 때는 칸이 더 촘촘하므로 글자 크기를 살짝 줄임
-                          fontSize: cellSize * (gridSize == 5 ? 0.45 : 0.38),
+                          fontSize: (cellSize * (gridSize == 5 ? 0.45 : 0.38)).clamp(12.0, 32.0).toDouble(),
                           fontWeight: FontWeight.w900,
                           color: const Color(0xFF4A2E18),
                           letterSpacing: -0.5,

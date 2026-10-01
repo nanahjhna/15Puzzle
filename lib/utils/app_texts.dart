@@ -35,6 +35,10 @@ class AppTexts {
       'homeTooltip': '홈으로 이동',
       'recordScreenTitle': '🏆 게임 기록',
       'bestRecord': '최고 기록',
+      'topRecords': '상위 기록',
+      'firstPlace': '1위',
+      'secondPlace': '2위',
+      'thirdPlace': '3위',
       'totalPlays': '플레이 횟수',
       'playsUnit': '회',
       'totalTime': '누적 플레이 시간',
@@ -57,6 +61,11 @@ class AppTexts {
       'gameModeSelect': '게임 모드 선택',
       'changeLanguageTooltip': '언어 변경',
       'soundPlayError': '사운드 재생 중 오류가 발생했습니다.',
+      // 📌 인앱 업데이트 안내 키값
+      'updateAvailableTitle': '업데이트 가능',
+      'updateAvailableMessage': '새로운 버전이 배포되었습니다. 지금 업데이트할까요?',
+      'updateNow': '지금 업데이트',
+      'updateLater': '나중에',
     },
     'English': {
       'gameStart': 'Start Game',
@@ -73,6 +82,10 @@ class AppTexts {
       'homeTooltip': 'Go to Home',
       'recordScreenTitle': '🏆 Game Records',
       'bestRecord': 'Best Record',
+      'topRecords': 'Top Records',
+      'firstPlace': '1st',
+      'secondPlace': '2nd',
+      'thirdPlace': '3rd',
       'totalPlays': 'Total Plays',
       'playsUnit': 'times',
       'totalTime': 'Total Time',
@@ -94,6 +107,11 @@ class AppTexts {
       'gameModeSelect': 'Select Game Mode',
       'changeLanguageTooltip': 'Change Language',
       'soundPlayError': 'An error occurred while playing the sound.',
+      // 📌 인앱 업데이트 안내 키값
+      'updateAvailableTitle': 'Update Available',
+      'updateAvailableMessage': 'A new version has been released. Update now?',
+      'updateNow': 'Update Now',
+      'updateLater': 'Later',
     },
     '日本語': {
       'gameStart': 'ゲーム開始',
@@ -110,6 +128,10 @@ class AppTexts {
       'homeTooltip': 'ホームへ移動',
       'recordScreenTitle': '🏆 ゲーム記録',
       'bestRecord': '最高記録',
+      'topRecords': 'トップ記録',
+      'firstPlace': '1位',
+      'secondPlace': '2位',
+      'thirdPlace': '3位',
       'totalPlays': 'プレイ回数',
       'playsUnit': '回',
       'totalTime': '累計プレイ時間',
@@ -131,6 +153,11 @@ class AppTexts {
       'gameModeSelect': 'ゲームモード選択',
       'changeLanguageTooltip': '言語を変更',
       'soundPlayError': 'サウンドの再生中にエラーが発生しました。',
+      // 📌 인앱 업데이트 안내 키값
+      'updateAvailableTitle': 'アップデートがあります',
+      'updateAvailableMessage': '新しいバージョンが公開されました。今すぐ更新しますか？',
+      'updateNow': '今すぐ更新',
+      'updateLater': '後で',
     },
   };
 
