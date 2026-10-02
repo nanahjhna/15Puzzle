@@ -79,11 +79,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fit: BoxFit.cover, // 화면에 꽉 차게 비율 유지하며 채우기
           ),
         ),
-        child: Column(
-          children: [
-            // 커스텀 상단 영역 (배경 위에 반투명하게 겹침)
-            SafeArea(
-              child: Padding(
+        // 📌 하단 광고/버전 텍스트까지 시스템 내비게이션 영역에 침범하지 않도록
+        //    Column 전체를 SafeArea로 감싼다 (다른 화면과 동일한 처리 방식)
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 커스텀 상단 영역 (배경 위에 반투명하게 겹침)
+              Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
@@ -113,139 +115,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-            ),
 
             // 기존 콘텐츠 영역 (중앙 배치)
-            Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Spacer(),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Spacer(),
 
-                      // 설정 항목들을 감싸는 카드 컨테이너 (가독성 향상)
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.4), // 반투명 검은색 배경으로 텍스트 가독성 확보
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-                        ),
-                        child: Column(
-                          children: [
-                            // 📌 언어 변경 드롭다운 추가
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  AppTexts.get('selectLanguage'), // 📌 다국어 적용
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                        // 설정 항목들을 감싸는 카드 컨테이너 (가독성 향상)
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4), // 반투명 검은색 배경으로 텍스트 가독성 확보
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                          ),
+                          child: Column(
+                            children: [
+                              // 📌 언어 변경 드롭다운 추가
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    AppTexts.get('selectLanguage'), // 📌 다국어 적용
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  DropdownButton<String>(
+                                    value: _selectedLang,
+                                    dropdownColor: const Color(0xFF283593),
+                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                    underline: Container(),
+                                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                                    items: ['한국어', 'English', '日本語'].map((String lang) {
+                                      return DropdownMenuItem<String>(
+                                        value: lang,
+                                        child: Text(lang),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? newLang) async {
+                                      if (newLang != null) {
+                                        setState(() {
+                                          _selectedLang = newLang;
+                                        });
+                                        await AppTexts.setLanguage(newLang); // 📌 언어 저장 및 변경
+                                        setState(() {}); // 현재 화면 새로고침
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const Divider(color: Colors.white24, height: 24),
+                              _buildSettingSwitch(
+                                title: AppTexts.get('soundEffects'), // 📌 다국어 적용
+                                value: _isSoundOn,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _isSoundOn = value;
+                                  });
+                                  _saveSettings(_isSoundOn); // 📌 변경 즉시 저장
+                                },
+                              ),
+                              const Divider(color: Colors.white24, height: 24),
+
+                              // 개인정보처리방침 버튼 추가
+                              SizedBox(
+                                width: double.infinity,
+                                child: TextButton(
+                                  onPressed: _launchPrivacyPolicy,
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    alignment: Alignment.centerLeft,
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        AppTexts.get('privacyPolicy'), // 📌 다국어 적용
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Colors.white70,
+                                        size: 16,
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                DropdownButton<String>(
-                                  value: _selectedLang,
-                                  dropdownColor: const Color(0xFF283593),
-                                  style: const TextStyle(color: Colors.white, fontSize: 16),
-                                  underline: Container(),
-                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                                  items: ['한국어', 'English', '日本語'].map((String lang) {
-                                    return DropdownMenuItem<String>(
-                                      value: lang,
-                                      child: Text(lang),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newLang) async {
-                                    if (newLang != null) {
-                                      setState(() {
-                                        _selectedLang = newLang;
-                                      });
-                                      await AppTexts.setLanguage(newLang); // 📌 언어 저장 및 변경
-                                      setState(() {}); // 현재 화면 새로고침
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                            const Divider(color: Colors.white24, height: 24),
-                            _buildSettingSwitch(
-                              title: AppTexts.get('soundEffects'), // 📌 다국어 적용
-                              value: _isSoundOn,
-                              onChanged: (value) {
-                                setState(() {
-                                  _isSoundOn = value;
-                                });
-                                _saveSettings(_isSoundOn); // 📌 변경 즉시 저장
-                              },
-                            ),
-                            const Divider(color: Colors.white24, height: 24),
-
-                            // 개인정보처리방침 버튼 추가
-                            SizedBox(
-                              width: double.infinity,
-                              child: TextButton(
-                                onPressed: _launchPrivacyPolicy,
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  alignment: Alignment.centerLeft,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppTexts.get('privacyPolicy'), // 📌 다국어 적용
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.arrow_forward_ios,
-                                      color: Colors.white70,
-                                      size: 16,
-                                    ),
-                                  ],
-                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
 
-                      const Spacer(),
-                    ],
+                        const Spacer(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // 📌 배너 광고 영역을 버전 정보 위로 이동
-            const SizedBox(
-              height: 50,
-              child: AdBannerWidget(),
-            ),
-            const SizedBox(height: 5),
+              // 📌 배너 광고 영역을 버전 정보 위로 이동
+              const SizedBox(
+                height: 50,
+                child: AdBannerWidget(),
+              ),
+              const SizedBox(height: 5),
 
-            // 화면 최하단 버전 표시 (버전 정보를 읽기 전에는 감춘다)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: _appVersion.isEmpty
-                  ? const SizedBox.shrink()
-                  : Text(
-                      'ver : $_appVersion',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+              // 화면 최하단 버전 표시 (버전 정보를 읽기 전에는 감춘다)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: _appVersion.isEmpty
+                    ? const SizedBox.shrink()
+                    : Text(
+                        'ver : $_appVersion',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );

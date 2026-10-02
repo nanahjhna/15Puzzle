@@ -11,7 +11,8 @@ import '../utils/app_texts.dart'; // 📌 AppTexts 임포트 추가
 // 📌 홍보 앱 목록 (팝업에서 스토어로 연결됩니다)
 // 여기에 { 이름, 패키지명 }만 추가하면 팝업에 자동 반영됩니다.
 const List<_PromoApp> _promoApps = [
-  _PromoApp(name: '15Puzzle', packageName: 'com.han.puzzle'),
+  _PromoApp(name: 'magicCanPuzzle', packageName: 'com.han.puzzle'),
+  _PromoApp(name: 'TapToBeat', packageName: 'com.han.TapToBeat'),
 ];
 
 class _PromoApp {

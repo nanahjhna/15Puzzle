@@ -181,6 +181,10 @@ class _FifteenPuzzleScreenState extends State<FifteenPuzzleScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onPressed: () {
+                        // 📌 다이얼로그를 먼저 닫고 이동해야 스택에 남지 않는다.
+                        // (barrierDismissible: false라 닫지 않으면 기록 화면 복귀 후
+                        //  시작 다이얼로그가 다시 떠버린다)
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
