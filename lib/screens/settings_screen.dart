@@ -56,9 +56,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // 개인정보처리방침 URL 여는 함수
+  // 개인정보처리방침 URL 여는 함수 (Firebase Hosting)
   Future<void> _launchPrivacyPolicy() async {
-    final Uri url = Uri.parse('https://hdevpolic.netlify.app/');
+    final Uri url = Uri.parse('https://fifteenpuzzle-app.web.app/privacy-policy/');
     try {
       if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
         throw Exception('Could not launch $url');

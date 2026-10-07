@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<meta name="description" content="15Puzzle 개인정보처리방침 - Han Developer가 제공하는 15Puzzle 앱의 개인정보 수집, 이용, 공유에 관한 정책입니다.">
+<title>개인정보처리방침 | 15Puzzle</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #20242e;
+    --muted: #6b7280;
+    --accent: #1e1e3f;
+    --accent2: #7c3aed;
+    --border: #e5e7ef;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+  }
+  .tabs {
+    position: sticky; top: 0; z-index: 10;
+    background: #fff; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: center; gap: 8px; padding: 10px 12px;
+  }
+  .tabs button {
+    border: 1px solid var(--border); background: #fff; color: var(--muted);
+    padding: 8px 20px; border-radius: 999px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all .15s;
+  }
+  .tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .container { max-width: 800px; margin: 0 auto; padding: 24px 16px 64px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 30px; margin-bottom: 18px;
+    box-shadow: 0 4px 18px rgba(20,24,40,.05);
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  h2 { font-size: 19px; margin: 26px 0 10px; color: var(--accent2); }
+  h3 { font-size: 15px; margin: 16px 0 6px; }
+  p, li { font-size: 15px; }
+  ul, ol { padding-left: 24px; margin: 8px 0; }
+  li { margin: 5px 0; }
+  a { color: var(--accent2); word-break: break-all; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .summary {
+    background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 12px;
+    padding: 16px 18px; margin: 14px 0; font-size: 14.5px;
+  }
+  .table-wrap { overflow-x: auto; margin: 12px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+  th { background: #f8f9ff; }
+  .lang-ko, .lang-en, .lang-ja { display: none; }
+  body.show-ko .lang-ko, body.show-en .lang-en, body.show-ja .lang-ja { display: block; }
+  .foot { text-align: center; color: var(--muted); font-size: 13px; margin-top: 30px; }
+  @media (max-width: 560px) {
+    .card { padding: 20px 18px; }
+    .tabs button { padding: 7px 14px; font-size: 13px; }
+  }
+  noscript .lang-ko { display: block; }
+</style>
+</head>
+<body class="show-ko">
+
+<div class="tabs" role="tablist">
+  <button type="button" onclick="switchLang('ko')" id="tab-ko" class="active" aria-label="한국어">한국어</button>
+  <button type="button" onclick="switchLang('en')" id="tab-en" aria-label="English">English</button>
+  <button type="button" onclick="switchLang('ja')" id="tab-ja" aria-label="日本語">日本語</button>
+</div>
+
+<div class="container">
+
+<!-- ======================= 한국어 (기본) ======================= -->
+<div class="lang-ko card">
+  <div class="meta">시행일: 2026년 10월 8일 · 마지막 수정일: 2026년 10월 8일</div>
+  <h1>개인정보처리방침</h1>
+  <p class="meta">15Puzzle (4x4 / 5x5 오프라인 &amp; 무료 퍼즐 게임)</p>
+  <p><strong>Han Developer</strong>(이하 "개발자")는 사용자의 개인정보보호를 매우 중요하게 생각하며, 이용자가 개발자가 운영하는 모바일 게임 <strong>15Puzzle</strong>(이하 "앱")을 이용할 때 수집·이용·공유되는 정보를 아래와 같이 투명하게 공개합니다.</p>
+</div>
+
+<div class="lang-ko card">
+  <h2>1. 수집하는 정보</h2>
+  <h3>1-1. 개발자가 직접 수집하는 정보</h3>
+  <p>본 앱은 <strong>개인 식별이 가능한 정보(이름, 이메일, 전화번호, 주소 등)를 일절 수집하지 않습니다.</strong> 회원가입, 로그인, 계정 시스템 자체가 없습니다.</p>
+  <h3>1-2. 기기 내부에만 저장되는 정보 (서버 전송 없음)</h3>
+  <p>게임 기록과 환경 설정을 위해 아래 정보가 사용자의 <strong>기기에 로컬로만</strong> 저장됩니다. 외부 서버로 전송되지 않습니다.</p>
+  <ul>
+    <li>게임 설정: 효과음 on/off, 선택 언어(한국어/English/日本語)</li>
+    <li>게임 기록: 모드별(4x4/5x5) 최고 기록, 상위 기록, 플레이 횟수, 누적 플레이 시간, 평균 클리어 타임</li>
+  </ul>
+  <p class="meta">※ 위 정보는 앱 삭제 또는 기기 "앱 데이터 지우기"를 통해 언제든지 완전히 삭제할 수 있습니다.</p>
+  <h3>1-3. 광고 SDK(AdMob)를 통해 처리되는 정보</h3>
+  <p>본 앱은 무료 서비스를 위해 <strong>Google AdMob</strong> 배너 광고를 사용합니다. 광고 SDK는 광고 제공, 측정, 사기 방지 등을 위해 기기 식별자(예: Android 광고 ID/AAID), IP 주소, 앱 활동 정보, 대략적인 위치 등을 처리할 수 있습니다. 이는 Google의 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">개인정보처리방침</a> 및 <a href="https://support.google.com/admob/answer/6128543" target="_blank" rel="noopener">광고 ID 정책</a>에 따릅니다.</p>
+  <div class="summary">💡 광고가 수집하는 데이터는 Google 정책에 따라 처리되며, 이용자는 기기 설정(설정 → Google → 광고)에서 <strong>광고 맞춤 설정 해제 / 광고 ID 삭제</strong>를 할 수 있습니다.</div>
+</div>
+
+<div class="lang-ko card">
+  <h2>2. 수집한 정보의 이용 목적</h2>
+  <ul>
+    <li>게임 기능 제공 (퍼즐 진행, 기록 저장·표시)</li>
+    <li>사용자 환경 설정 유지 (언어, 효과음)</li>
+    <li>무료 앱 운영을 위한 광고 표시</li>
+  </ul>
+</div>
+
+<div class="lang-ko card">
+  <h2>3. 정보의 공유 및 제3자 제공</h2>
+  <p>개발자는 사용자의 기기 로컬 데이터를 판매·임대하거나 다른 제3자에게 제공하지 않습니다. 다만 광고 표시 과정에서 아래 제3자에게 정보가 전달될 수 있습니다.</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>제공처</th><th>제공 목적</th><th>제공되는 정보</th><th>정책 링크</th></tr>
+      <tr>
+        <td>Google LLC (AdMob)</td>
+        <td>광고 게재 및 광고 측정</td>
+        <td>기기 식별자(광고 ID), IP 주소, 앱 활동 정보 등 (Google 정책에 근거)</td>
+        <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="lang-ko card">
+  <h2>4. 보관 기간 및 파기</h2>
+  <ul>
+    <li>기기 로컬 데이터: 사용자가 앱을 삭제하거나 앱 데이터를 지울 때까지 보관되며, 이후 완전히 삭제됩니다.</li>
+    <li>광고 SDK 데이터: Google의 보관 정책을 따릅니다.</li>
+    <li>문의·요청 시: 삭제 요청 접수 후 지체 없이 처리합니다.</li>
+  </ul>
+</div>
+
+<div class="lang-ko card">
+  <h2>5. 아동의 개인정보 보호</h2>
+  <p>본 앱은 만 13세 미만 아동을 대상으로 하지 않으며, 아동의 개인정보를 고의로 수집하지 않습니다. 만 13세 미만 사용자가 본 앱을 이용할 경우에는 보호자의 동의가 필요할 수 있습니다.</p>
+</div>
+
+<div class="lang-ko card">
+  <h2>6. 사용자의 권리</h2>
+  <ul>
+    <li>개인정보 수집·이용에 대한 동의를 거부할 권리 (앱 삭제 등)</li>
+    <li>저장된 데이터의 열람·삭제·정정 요청 권리</li>
+    <li>광고 맞춤 설정 해제 권리 (기기 설정에서 가능)</li>
+  </ul>
+  <p>데이터 삭제 요청 등 권리 행사가 필요하시면 아래 연락처로 문의해 주세요.</p>
+</div>
+
+<div class="lang-ko card">
+  <h2>7. 개인정보처리방침 변경</h2>
+  <p>본 방침은 법령 및 정책 변경, 앱 기능 변경에 따라 수정될 수 있습니다. 변경 시 본 페이지에 수정 일자와 내용을 공지합니다.</p>
+</div>
+
+<div class="lang-ko card">
+  <h2>8. 문의처</h2>
+  <p>개인정보 관련 문의 및 권리 행사는 아래로 연락해 주세요.</p>
+  <ul>
+    <li>개발자: Han Developer</li>
+    <li>이메일: <a href="mailto:nanahjhna@gmail.com">nanahjhna@gmail.com</a></li>
+  </ul>
+</div>
+
+<!-- ======================= English ======================= -->
+<div class="lang-en card">
+  <div class="meta">Effective Date: October 8, 2026 · Last Updated: October 8, 2026</div>
+  <h1>Privacy Policy</h1>
+  <p class="meta">15Puzzle (4x4 / 5x5 Offline &amp; Free Puzzle Game)</p>
+  <p><strong>Han Developer</strong> ("Developer") values your privacy. This policy transparently explains what information is collected, used, and shared when you use the mobile game <strong>15Puzzle</strong> (the "App").</p>
+</div>
+
+<div class="lang-en card">
+  <h2>1. Information We Collect</h2>
+  <h3>1-1. Information collected by the Developer</h3>
+  <p>The App does <strong>not collect any personally identifiable information</strong> (name, email, phone number, address, etc.). There is no sign-up, login, or account system.</p>
+  <h3>1-2. Information stored only on your device (never sent to servers)</h3>
+  <p>The following data is stored <strong>only locally on your device</strong> and is never transmitted to external servers:</p>
+  <ul>
+    <li>Game settings: sound on/off, selected language (Korean/English/Japanese)</li>
+    <li>Game records: best time per mode (4x4/5x5), top records, play count, total play time, average clear time</li>
+  </ul>
+  <p class="meta">※ This data is permanently deleted when you uninstall the App or clear the app data on your device.</p>
+  <h3>1-3. Information processed by the ad SDK (AdMob)</h3>
+  <p>The App displays <strong>Google AdMob</strong> banner ads to remain free. The ad SDK may process device identifiers (e.g., Android Advertising ID/AAID), IP address, app activity, and coarse location for ad delivery, measurement, and fraud prevention, in accordance with Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a> and <a href="https://support.google.com/admob/answer/6128543" target="_blank" rel="noopener">Advertising ID policy</a>.</p>
+  <div class="summary">💡 You can opt out of personalized ads or reset your advertising ID at any time on your device (Settings → Google → Ads).</div>
+</div>
+
+<div class="lang-en card">
+  <h2>2. How We Use the Information</h2>
+  <ul>
+    <li>Providing game features (puzzle play, record saving/display)</li>
+    <li>Maintaining user preferences (language, sound)</li>
+    <li>Displaying ads to keep the App free</li>
+  </ul>
+</div>
+
+<div class="lang-en card">
+  <h2>3. Sharing with Third Parties</h2>
+  <p>The Developer does not sell, rent, or disclose your local device data to third parties. However, the following third party may receive information during ad serving:</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Recipient</th><th>Purpose</th><th>Information</th><th>Policy Link</th></tr>
+      <tr>
+        <td>Google LLC (AdMob)</td>
+        <td>Ad delivery and measurement</td>
+        <td>Device identifiers (advertising ID), IP address, app activity, etc. (per Google policies)</td>
+        <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="lang-en card">
+  <h2>4. Retention and Deletion</h2>
+  <ul>
+    <li>Local device data: retained until you uninstall the App or clear app data, after which it is permanently deleted.</li>
+    <li>Ad SDK data: retained per Google's retention policies.</li>
+    <li>On request: deletion requests are processed without undue delay.</li>
+  </ul>
+</div>
+
+<div class="lang-en card">
+  <h2>5. Children's Privacy</h2>
+  <p>The App is not directed to children under the age of 13 and does not knowingly collect personal information from children. Parental consent may be required for children under 13.</p>
+</div>
+
+<div class="lang-en card">
+  <h2>6. Your Rights</h2>
+  <ul>
+    <li>Right to refuse consent to collection/use (e.g., by uninstalling the App)</li>
+    <li>Right to access, delete, or correct stored data</li>
+    <li>Right to opt out of personalized ads (via device settings)</li>
+  </ul>
+  <p>To exercise your rights, including deletion requests, contact us below.</p>
+</div>
+
+<div class="lang-en card">
+  <h2>7. Changes to This Policy</h2>
+  <p>This policy may be updated due to changes in laws, policies, or App features. Changes will be announced on this page with the revision date.</p>
+</div>
+
+<div class="lang-en card">
+  <h2>8. Contact</h2>
+  <p>For privacy questions or to exercise your rights, contact:</p>
+  <ul>
+    <li>Developer: Han Developer</li>
+    <li>Email: <a href="mailto:nanahjhna@gmail.com">nanahjhna@gmail.com</a></li>
+  </ul>
+</div>
+
+<!-- ======================= 日本語 ======================= -->
+<div class="lang-ja card">
+  <div class="meta">発効日: 2026年10月8日 · 最終更新日: 2026年10月8日</div>
+  <h1>プライバシーポリシー</h1>
+  <p class="meta">15Puzzle (4x4 / 5x5 オフライン &amp; 無料パズルゲーム)</p>
+  <p><strong>Han Developer</strong>（以下「開発者」）は、モバイルゲーム <strong>15Puzzle</strong>（以下「アプリ」）の利用に関して収集・利用・共有される情報を以下のとおり透明に開示します。</p>
+</div>
+
+<div class="lang-ja card">
+  <h2>1. 収集する情報</h2>
+  <h3>1-1. 開発者が直接収集する情報</h3>
+  <p>本アプリは<strong>個人を特定できる情報（氏名、メールアドレス、電話番号、住所など）を一切収集しません。</strong>会員登録・ログイン・アカウントシステムはありません。</p>
+  <h3>1-2. 端末内にのみ保存される情報（サーバー送信なし）</h3>
+  <p>ゲーム記録と環境設定のため、以下の情報が<strong>端末内にローカルで保存</strong>されます。外部サーバーへ送信されることはありません。</p>
+  <ul>
+    <li>ゲーム設定: 効果音オン/オフ、選択言語（韓国語/英語/日本語）</li>
+    <li>ゲーム記録: モード別(4x4/5x5)の最高記録、上位記録、プレイ回数、累計プレイ時間、平均クリアタイム</li>
+  </ul>
+  <p class="meta">※ これらの情報は、アプリのアンインストールまたは端末の「アプリデータを消去」でいつでも完全に削除できます。</p>
+  <h3>1-3. 広告SDK（AdMob）が処理する情報</h3>
+  <p>本アプリは無料提供のため <strong>Google AdMob</strong> のバナー広告を使用します。広告SDKは、広告配信・測定・不正防止のために、端末識別子（例: Android 広告ID/AAID）、IPアドレス、アプリの利用状況、おおよその位置情報などを処理することがあります。これはGoogleの<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">プライバシーポリシー</a>および<a href="https://support.google.com/admob/answer/6128543" target="_blank" rel="noopener">広告IDポリシー</a>に従います。</p>
+  <div class="summary">💡 端末設定（設定 → Google → 広告）から<strong>パーソナライズ広告のオプトアウト / 広告IDの削除</strong>が可能です。</div>
+</div>
+
+<div class="lang-ja card">
+  <h2>2. 情報の利用目的</h2>
+  <ul>
+    <li>ゲーム機能の提供（パズル進行、記録の保存・表示）</li>
+    <li>ユーザー設定の維持（言語、効果音）</li>
+    <li>無料アプリ運営のための広告表示</li>
+  </ul>
+</div>
+
+<div class="lang-ja card">
+  <h2>3. 第三者への共有</h2>
+  <p>開発者は、端末のローカルデータを第三者に販売・貸与・開示しません。ただし、広告表示の過程で以下の第三者に情報が渡される場合があります。</p>
+  <div class="table-wrap">
+    <table>
+      <tr><th>相手先</th><th>目的</th><th>提供される情報</th><th>ポリシーリンク</th></tr>
+      <tr>
+        <td>Google LLC (AdMob)</td>
+        <td>広告配信および測定</td>
+        <td>端末識別子（広告ID）、IPアドレス、アプリの利用状況など（Googleポリシーに基づく）</td>
+        <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="lang-ja card">
+  <h2>4. 保有期間と削除</h2>
+  <ul>
+    <li>端末ローカルデータ: アプリ削除またはアプリデータ消去まで保有され、その後完全に削除されます。</li>
+    <li>広告SDKデータ: Googleの保有ポリシーに従います。</li>
+    <li>依頼時: 削除依頼は遅滞なく処理します。</li>
+  </ul>
+</div>
+
+<div class="lang-ja card">
+  <h2>5. 子どものプライバシー保護</h2>
+  <p>本アプリは13歳未満の子どもを対象としておらず、子どもの個人情報を意図的に収集しません。13歳未満のお子様が利用する場合は保護者の同意が必要となる場合があります。</p>
+</div>
+
+<div class="lang-ja card">
+  <h2>6. ユーザーの権利</h2>
+  <ul>
+    <li>収集・利用への同意を拒否する権利（例: アプリのアンインストール）</li>
+    <li>保存データの閲覧・削除・訂正を請求する権利</li>
+    <li>パーソナライズ広告をオプトアウトする権利（端末設定）</li>
+  </ul>
+  <p>削除依頼などの権利行使は下記の連絡先までお問い合わせください。</p>
+</div>
+
+<div class="lang-ja card">
+  <h2>7. 本ポリシーの変更</h2>
+  <p>本ポリシーは法令・ポリシー・アプリ機能の変更により更新される場合があります。変更時は本ページに改定日と内容を掲載します。</p>
+</div>
+
+<div class="lang-ja card">
+  <h2>8. お問い合わせ先</h2>
+  <p>プライバシーに関するご質問・権利行使は以下までお願いします。</p>
+  <ul>
+    <li>開発者: Han Developer</li>
+    <li>メール: <a href="mailto:nanahjhna@gmail.com">nanahjhna@gmail.com</a></li>
+  </ul>
+</div>
+
+<div class="foot">© 2026 Han Developer · 15Puzzle</div>
+</div>
+
+<script>
+  function switchLang(lang) {
+    document.body.className = 'show-' + lang;
+    var btns = document.querySelectorAll('.tabs button');
+    for (var i = 0; i < btns.length; i++) { btns[i].classList.remove('active'); }
+    document.getElementById('tab-' + lang).classList.add('active');
+  }
+</script>
+
+</body>
+</html>
